@@ -21,8 +21,13 @@ export default function BusinessPage({ params }: { params: Promise<{ id: string 
 
   return (
     <main className="px-6 py-12">
-      <div className="mx-auto mb-6 w-full max-w-[1180px]">
+      <div className="mx-auto mb-6 flex w-full max-w-[1180px] items-center justify-between gap-4">
         <Link href="/dashboard" className="text-sm text-[#78716C] hover:text-[#1C1917]">← Applications</Link>
+        {status === "ready" && a && (
+          <Link href={`/simulator/${id}`} className="text-sm font-medium text-[#1D6F42] hover:underline">
+            Run what-if simulator →
+          </Link>
+        )}
       </div>
       {status === "loading" && <p className="text-center text-sm text-[#A8A29E]">Evaluating with Aegis…</p>}
       {status === "error" && <p className="text-center text-sm text-[#B23A1E]">Couldn&apos;t load this assessment.</p>}
