@@ -1,4 +1,4 @@
-import type { MSMEProfile, Lever } from "@/aegis-core";
+import type { MSMEProfile, Lever } from "@/engine/aegis-core";
 
 /**
  * SEED DATA — synthetic archetypes. Lives in the data layer, NOT the engine.

@@ -1,5 +1,5 @@
-import type { EnrichedAssessment } from "@/lib/assessmentService";
-import type { Recommendation } from "@/aegis-core";
+import type { EnrichedAssessment } from "@/engine/assessmentAdapter";
+import type { Recommendation } from "@/engine/aegis-core";
 
 /** The flagship screen. Renders only from the contract — no business logic here. */
 

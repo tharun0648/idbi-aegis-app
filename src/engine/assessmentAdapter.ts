@@ -1,5 +1,5 @@
-import { assess, type CoreAssessment } from "../aegis-core";
-import { SEEDS, type SeededBusiness } from "./data/seeds";
+import { assess, type CoreAssessment } from "@/engine/aegis-core";
+import { SEEDS, type SeededBusiness } from "@/data/seeds";
 
 /**
  * AssessmentService — the boundary between the pure engine and the app.

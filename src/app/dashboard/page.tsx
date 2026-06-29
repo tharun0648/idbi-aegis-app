@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listBusinesses } from "@/lib/assessmentService";
+import { listBusinesses } from "@/engine/assessmentAdapter";
 
 const verdictLabel: Record<string, string> = { reject: "Bureau: Reject", borderline: "Bureau: Borderline", approvable: "Bureau: Approvable" };
 

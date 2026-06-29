@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { assess, simulate } from "./aegis-core";
-import { SEEDS, CLIMBER_LEVERS } from "./lib/data/seeds";
+import { assess, simulate } from "@/engine/aegis-core";
+import { SEEDS, CLIMBER_LEVERS } from "@/data/seeds";
 
 /**
  * These tests guard the DEMO NARRATIVE. If a weight or derivation tweak

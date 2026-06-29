@@ -2,8 +2,8 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import HealthCard from "@/components/HealthCard";
-import type { EnrichedAssessment } from "@/lib/assessmentService";
+import HealthCard from "@/components/health-card/HealthCard";
+import type { EnrichedAssessment } from "@/engine/assessmentAdapter";
 
 export default function BusinessPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

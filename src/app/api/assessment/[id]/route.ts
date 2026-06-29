@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAssessment } from "@/lib/assessmentService";
+import { getAssessment } from "@/engine/assessmentAdapter";
 
 // GET /api/assessment/:id  ->  EnrichedAssessment
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
