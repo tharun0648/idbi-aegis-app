@@ -21,7 +21,7 @@ export default function BusinessPage({ params }: { params: Promise<{ id: string 
 
   return (
     <main className="px-6 py-12">
-      <div className="mx-auto mb-6 max-w-2xl">
+      <div className="mx-auto mb-6 w-full max-w-[1180px]">
         <Link href="/dashboard" className="text-sm text-[#78716C] hover:text-[#1C1917]">← Applications</Link>
       </div>
       {status === "loading" && <p className="text-center text-sm text-[#A8A29E]">Evaluating with Aegis…</p>}
