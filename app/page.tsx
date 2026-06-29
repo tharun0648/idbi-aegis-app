@@ -8,7 +8,7 @@ export default function Home() {
         The intelligence layer between data and the lending decision.
       </h1>
       <p className="mt-4 max-w-xl text-base leading-relaxed text-[#57534E]">
-        Aegis reads alternative data the bureau can&apos;t see, builds an explainable Financial Health Card,
+        Aegis reads alternative data the bureau can&apos;t see, builds an explainable lending assessment,
         and helps an underwriter decide — without replacing credit policy.
       </p>
       <div className="mt-8">
