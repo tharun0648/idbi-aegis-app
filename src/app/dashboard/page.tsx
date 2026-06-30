@@ -8,8 +8,18 @@ export default function Dashboard() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <Link href="/" className="text-sm text-[#78716C] hover:text-[#1C1917]">← Aegis</Link>
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-[#1C1917]">Applications</h1>
-      <p className="mt-1 text-sm text-[#78716C]">Three MSME applications awaiting underwriting review.</p>
+      <div className="mt-4 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-[#1C1917]">Applications</h1>
+          <p className="mt-1 text-sm text-[#78716C]">MSME applications awaiting underwriting review.</p>
+        </div>
+        <Link
+          href="/assess"
+          className="shrink-0 rounded-lg border border-[#1D6F42] px-4 py-2 text-sm font-medium text-[#1D6F42] transition-colors hover:bg-[#1D6F42] hover:text-white"
+        >
+          Assess any profile →
+        </Link>
+      </div>
 
       <ul className="mt-6 space-y-3">
         {businesses.map(b => (

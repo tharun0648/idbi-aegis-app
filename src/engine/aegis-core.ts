@@ -159,7 +159,38 @@ export interface CoreAssessment {
   improvementPlan: ImprovementStep[];
 }
 
+/**
+ * Engine guard — belt-and-suspenders. Validation lives at the boundary
+ * (profileSchema.ts); this is the last line of defence so the engine fails
+ * LOUD if anything ever bypasses it, rather than silently producing NaN or a
+ * false APPROVE. It enforces an invariant only: it does NOT clamp, coerce, or
+ * touch any scoring arithmetic. Throws on a non-finite number or unknown enum.
+ */
+function assertAssessable(b: MSMEProfile): void {
+  const numbers: ReadonlyArray<readonly [string, number]> = [
+    ["gstOnTimeRate", b.gstOnTimeRate],
+    ["gstMaxGapCycles", b.gstMaxGapCycles],
+    ["digitalReceiptsShare", b.digitalReceiptsShare],
+    ["digitalHistoryMonths", b.digitalHistoryMonths],
+    ["yearsOperating", b.yearsOperating],
+    ["avgReceivableDays", b.avgReceivableDays],
+    ["topVendorShare", b.topVendorShare],
+  ];
+  for (const [name, value] of numbers) {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      throw new Error(`Aegis engine: ${name} must be a finite number (received ${String(value)}).`);
+    }
+  }
+  if (!(b.cashflowTrend in CASHFLOW_MAP)) {
+    throw new Error(`Aegis engine: unknown cashflowTrend "${String(b.cashflowTrend)}".`);
+  }
+  if (!(b.seasonality in SEASONALITY_MAP)) {
+    throw new Error(`Aegis engine: unknown seasonality "${String(b.seasonality)}".`);
+  }
+}
+
 export function assess(b: MSMEProfile): CoreAssessment {
+  assertAssessable(b);
   const factors = deriveFactors(b);
   const flags = hardFlags(b);
   const penalties = softPenalties(b, flags);

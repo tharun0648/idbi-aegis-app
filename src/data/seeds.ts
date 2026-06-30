@@ -6,7 +6,7 @@ import type { MSMEProfile, Lever } from "@/engine/aegis-core";
  */
 
 export interface SeededBusiness {
-  id: "champion" | "mirage" | "climber";
+  id: "champion" | "mirage" | "climber" | "prime" | "cusp" | "default" | "kyc";
   businessName: string;
   archetype: string;
   emoji: string;
@@ -44,6 +44,56 @@ export const SEEDS: Record<SeededBusiness["id"], SeededBusiness> = {
       digitalReceiptsShare: 0.75, digitalHistoryMonths: 14, yearsOperating: 3,
       avgReceivableDays: 60, topVendorShare: 34, seasonality: "moderate", seasonalCashDip: false,
       activeDefault: false, kycMismatch: false,
+    },
+  },
+
+  // ── Gap-filling seeds: purposeful coverage of the uncovered decision space ──
+
+  // Clean, high-confidence APPROVE with zero penalties and no flags.
+  prime: {
+    id: "prime", businessName: "Lakshmi Engineering", archetype: "Prime Performer", emoji: "🏆",
+    bureauScore: 780, bureauVerdict: "approvable",
+    profile: {
+      cashflowTrend: "growing", gstOnTimeRate: 0.98, gstMaxGapCycles: 0, gstLastCycleLate: false,
+      digitalReceiptsShare: 0.9, digitalHistoryMonths: 24, yearsOperating: 6,
+      avgReceivableDays: 28, topVendorShare: 18, seasonality: "low", seasonalCashDip: false,
+      activeDefault: false, kycMismatch: false,
+    },
+  },
+
+  // CONDITIONAL band (net 50–59): strengths present but soft risks need terms.
+  cusp: {
+    id: "cusp", businessName: "Anil Textiles", archetype: "On the Cusp", emoji: "⚖️",
+    bureauScore: 690, bureauVerdict: "borderline",
+    profile: {
+      cashflowTrend: "volatile", gstOnTimeRate: 0.6, gstMaxGapCycles: 1, gstLastCycleLate: false,
+      digitalReceiptsShare: 0.55, digitalHistoryMonths: 10, yearsOperating: 3,
+      avgReceivableDays: 52, topVendorShare: 24, seasonality: "moderate", seasonalCashDip: false,
+      activeDefault: false, kycMismatch: false,
+    },
+  },
+
+  // ACTIVE_DEFAULT hard-flag knockout — strong surface, but a live default overrides.
+  default: {
+    id: "default", businessName: "Vikram Logistics", archetype: "Overextended", emoji: "🚩",
+    bureauScore: 640, bureauVerdict: "reject",
+    profile: {
+      cashflowTrend: "stable", gstOnTimeRate: 0.88, gstMaxGapCycles: 0, gstLastCycleLate: false,
+      digitalReceiptsShare: 0.8, digitalHistoryMonths: 20, yearsOperating: 5,
+      avgReceivableDays: 38, topVendorShare: 20, seasonality: "low", seasonalCashDip: false,
+      activeDefault: true, kycMismatch: false,
+    },
+  },
+
+  // KYC_MISMATCH hard-flag knockout — identity inconsistency overrides the score.
+  kyc: {
+    id: "kyc", businessName: "Priya Exports", archetype: "Identity Gap", emoji: "🔍",
+    bureauScore: 710, bureauVerdict: "approvable",
+    profile: {
+      cashflowTrend: "improving", gstOnTimeRate: 0.92, gstMaxGapCycles: 0, gstLastCycleLate: false,
+      digitalReceiptsShare: 0.78, digitalHistoryMonths: 16, yearsOperating: 4,
+      avgReceivableDays: 35, topVendorShare: 22, seasonality: "low", seasonalCashDip: false,
+      activeDefault: false, kycMismatch: true,
     },
   },
 };
