@@ -56,14 +56,18 @@ Open the app, choose a business from the dashboard, and the Health Card renders 
 ## Project structure
 
 ```
-aegis-core.ts                       Pure scoring + decision engine (no UI, no IO)
-aegis-core.test.ts                  Engine tests
-lib/data/seeds.ts                   Synthetic MSME archetypes
-lib/assessmentService.ts            Lookup + assembles the API response
-app/api/assessment/[id]/route.ts    Assessment endpoint
-app/                                Landing, dashboard, business pages
-components/HealthCard.tsx           The Health Card
+src/engine/aegis-core.ts            Pure scoring + decision engine (no UI, no IO)
+src/engine/aegis-core.test.ts       Engine tests
+src/engine/assessmentAdapter.ts     Lookup + assembles the API response
+src/data/seeds.ts                   Synthetic MSME archetypes
+src/view-models/healthCard.ts       Maps the engine decision to UI title/tone/colour
+src/app/api/assessment/[id]/route.ts  Assessment endpoint
+src/app/                            Landing, dashboard, business, simulator pages
+src/components/health-card/         The Health Card and its sub-components
+src/components/simulator/           What-If simulator panel and sliders
 ```
+
+Imports use the `@/*` alias, which resolves to `src/*`.
 
 The engine is kept as a standalone module so the data source can later be swapped from synthetic seeds to a ULI adapter without touching the decision logic.
 
@@ -71,9 +75,12 @@ The engine is kept as a standalone module so the data source can later be swappe
 
 Next.js (App Router), React, TypeScript, Tailwind CSS, Vitest.
 
-## Roadmap
+## Built
 
 - What-If simulator: adjust receivables, GST filing, and vendor concentration and watch the decision recompute.
+
+## Roadmap
+
 - Natural-language narration of the decision trace.
 - Live ULI / Account Aggregator integration in place of synthetic data.
 - Portfolio-level view of how new approvals affect book quality.
