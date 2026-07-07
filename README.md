@@ -41,6 +41,8 @@ The prototype runs on three synthetic MSME profiles, each chosen to test a diffe
 
 Aegis is designed to consume ULI- and Account-Aggregator-shaped data. The prototype uses synthetic profiles in place of a live sandbox connection.
 
+Per-business descriptive metadata shown in the UI — annual turnover, GSTIN, industry, location, established year, and the relationship-manager identity — is **synthetic demo data** (`src/data/presentation.ts`). It is presentation chrome only: it lives outside the engine and the `EnrichedAssessment` contract, and no decision ever depends on it. Only the scored fields (factors, penalties, hard flags, the score equation, confidence) are computed by the engine.
+
 ## Running locally
 
 Requires Node 18.18 or later (Node 20+ recommended).

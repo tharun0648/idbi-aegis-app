@@ -25,7 +25,9 @@ export interface EnrichedAssessment extends CoreAssessment {
 
 function toMeta(b: SeededBusiness): BusinessMeta {
   return {
-    id: b.id, businessName: b.businessName, archetype: b.archetype, emoji: b.emoji,
+    // emoji is intentionally not surfaced — the UI shows lucide verdict icons.
+    // The field stays in the (frozen) contract; we just never populate it.
+    id: b.id, businessName: b.businessName, archetype: b.archetype, emoji: "",
     bureauScore: b.bureauScore, bureauVerdict: b.bureauVerdict,
   };
 }
@@ -46,11 +48,30 @@ export function listBusinesses(): BusinessMeta[] {
   return Object.values(SEEDS).map(toMeta);
 }
 
+/**
+ * Lightweight list for the dashboard: business meta plus the engine's decision,
+ * so the UI can show the AEGIS verdict (not the bureau verdict). Runs the pure
+ * engine only — no narrator, no new contract. Presentation reads these fields;
+ * it never recomputes them.
+ */
+export interface BusinessSummary {
+  meta: BusinessMeta;
+  recommendation: CoreAssessment["recommendation"];
+  adjustedNetScore: number;
+}
+
+export function listBusinessSummaries(): BusinessSummary[] {
+  return Object.values(SEEDS).map(b => {
+    const core = assess(b.profile);
+    return { meta: toMeta(b), recommendation: core.recommendation, adjustedNetScore: core.adjustedNetScore };
+  });
+}
+
 const AD_HOC_META: BusinessMeta = {
   id: "custom",
   businessName: "Custom profile",
   archetype: "Evaluator input",
-  emoji: "🧪",
+  emoji: "",
   bureauScore: null,
   bureauVerdict: "Not pulled",
 };

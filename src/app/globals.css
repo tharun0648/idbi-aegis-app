@@ -3,8 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --bg: #f7f7f5;
-  --ink: #1c1917;
+  /* Design Spec v1.0 base tokens */
+  --bg: #f8faf9;
+  --ink: #111827;
 }
 
 html, body {
@@ -14,4 +15,10 @@ html, body {
 
 body {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Precision-Minimal motion: opacity only, 150–200ms, reduced-motion respected. */
+@media (prefers-reduced-motion: no-preference) {
+  .fade-in { animation: aegis-fade 180ms ease-out both; }
+  @keyframes aegis-fade { from { opacity: 0; } to { opacity: 1; } }
 }

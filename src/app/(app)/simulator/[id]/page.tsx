@@ -13,7 +13,7 @@ export default async function SimulatorPage({ params }: { params: Promise<{ id: 
     id: seed.id,
     businessName: seed.businessName,
     archetype: seed.archetype,
-    emoji: seed.emoji,
+    emoji: "", // not surfaced — lucide verdict icons replace emoji
     bureauScore: seed.bureauScore,
     bureauVerdict: seed.bureauVerdict,
   };

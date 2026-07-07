@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Building2 } from "lucide-react";
 import { validateProfile, EXAMPLE_DEFAULT_PROFILE } from "@/engine/profileSchema";
 import { SEEDS, type SeededBusiness } from "@/data/seeds";
 import type { MSMEProfile } from "@/engine/aegis-core";
@@ -193,7 +194,7 @@ export default function ProfileForm() {
                 onClick={() => loadExample(b.profile)}
                 className="inline-flex items-center gap-1.5 rounded-md border border-[#E7E5E4] bg-white px-3 py-1.5 text-sm text-[#44403C] transition-colors hover:border-[#1D6F42] hover:text-[#1C1917]"
               >
-                <span>{b.emoji}</span>
+                <Building2 className="h-4 w-4 text-[#6B7280]" strokeWidth={1.75} />
                 {b.businessName}
               </button>
             ))}
