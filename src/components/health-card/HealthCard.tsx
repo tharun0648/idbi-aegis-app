@@ -97,10 +97,12 @@ export default function HealthCard({ a }: { a: EnrichedAssessment }) {
         </div>
       </div>
 
+      {/* LLM-authored prose — phrases the decision the engine already made.
+          Secondary to the banner; renders only when the narrator produced one. */}
       {a.businessNarrative && (
-        <section className="mt-6 rounded-lg border border-[#E7E5E4] bg-white p-6">
-          <h2 className="text-sm font-semibold text-[#1C1917]">Summary</h2>
-          <p className="mt-2 text-sm leading-relaxed text-[#44403C]">{a.businessNarrative}</p>
+        <section className="mt-6 rounded-lg border border-[#EDEBE9] bg-[#FAFAF9] p-5">
+          <p className="text-xs font-medium uppercase tracking-wide text-[#A8A29E]">Assessment summary</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-[#57534E]">{a.businessNarrative}</p>
         </section>
       )}
     </article>
