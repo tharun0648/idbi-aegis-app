@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { ChevronRight, TrendingUp } from "lucide-react";
 import HealthCard from "@/components/health-card/HealthCard";
 import type { EnrichedAssessment } from "@/engine/assessmentAdapter";
 
@@ -20,17 +21,25 @@ export default function BusinessPage({ params }: { params: Promise<{ id: string 
   }, [id]);
 
   return (
-    <main className="px-6 py-12">
+    <main className="px-8 py-8">
       <div className="mx-auto mb-6 flex w-full max-w-[1180px] items-center justify-between gap-4">
-        <Link href="/dashboard" className="text-sm text-[#78716C] hover:text-[#1C1917]">← Applications</Link>
+        <nav className="flex items-center gap-1.5 text-sm text-[#6B7280]">
+          <Link href="/dashboard" className="hover:text-[#111827]">Dashboard</Link>
+          <ChevronRight className="h-3.5 w-3.5 text-[#D1D5DB]" strokeWidth={2} />
+          <span className="font-medium text-[#111827]">Assessment</span>
+        </nav>
         {status === "ready" && a && (
-          <Link href={`/simulator/${id}`} className="text-sm font-medium text-[#1D6F42] hover:underline">
-            Run what-if simulator →
+          <Link
+            href={`/simulator/${id}`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E7EB] bg-white px-3.5 py-2 text-sm font-medium text-[#1F5E4A] transition-colors duration-150 hover:border-[#1F5E4A]"
+          >
+            <TrendingUp className="h-4 w-4" strokeWidth={1.75} /> Run What-If Simulator
           </Link>
         )}
       </div>
-      {status === "loading" && <p className="text-center text-sm text-[#A8A29E]">Evaluating with Aegis…</p>}
-      {status === "error" && <p className="text-center text-sm text-[#B23A1E]">Couldn&apos;t load this assessment.</p>}
+
+      {status === "loading" && <p className="text-center text-sm text-[#9CA3AF]">Evaluating with Aegis…</p>}
+      {status === "error" && <p className="text-center text-sm text-[#B42318]">Couldn&apos;t load this assessment.</p>}
       {status === "ready" && a && <HealthCard a={a} />}
     </main>
   );
