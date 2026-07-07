@@ -4,6 +4,7 @@ import RecommendationBanner from "./RecommendationBanner";
 import ScoreCard from "./ScoreCard";
 import FactorSection from "./FactorSection";
 import PenaltySection from "./PenaltySection";
+import EvidenceSection from "./EvidenceSection";
 import PolicyFlags from "./PolicyFlags";
 
 /**
@@ -56,7 +57,8 @@ export default function HealthCard({ a }: { a: EnrichedAssessment }) {
 
       <RecommendationBanner
         view={view}
-        netScore={a.netScore}
+        adjustedNetScore={a.adjustedNetScore}
+        alternativeEvidenceScore={a.alternativeEvidenceScore}
         confidence={a.decisionConfidence}
         drivers={drivers}
       />
@@ -72,9 +74,26 @@ export default function HealthCard({ a }: { a: EnrichedAssessment }) {
         <div className="space-y-6 lg:col-span-2">
           <FactorSection factors={a.factors} />
           <PenaltySection penalties={a.penalties} />
+          {/* Supplementary, below the core factors. Shows only when a bonus applies
+              (evidence > 0) and there is no hard flag — both guaranteed by the engine. */}
+          {a.alternativeEvidenceScore > 0 && a.hardFlags.length === 0 && (
+            <EvidenceSection
+              evidence={a.altEvidence}
+              netScore={a.netScore}
+              adjustedNetScore={a.adjustedNetScore}
+              alternativeEvidenceScore={a.alternativeEvidenceScore}
+              view={view}
+            />
+          )}
         </div>
         <div className="lg:col-span-1">
-          <ScoreCard netScore={a.netScore} capabilityScore={a.capabilityScore} view={view} />
+          <ScoreCard
+            netScore={a.netScore}
+            capabilityScore={a.capabilityScore}
+            adjustedNetScore={a.adjustedNetScore}
+            alternativeEvidenceScore={a.alternativeEvidenceScore}
+            view={view}
+          />
         </div>
       </div>
 

@@ -6,7 +6,7 @@ import type { MSMEProfile, Lever } from "@/engine/aegis-core";
  */
 
 export interface SeededBusiness {
-  id: "champion" | "mirage" | "climber" | "prime" | "cusp" | "default" | "kyc";
+  id: "champion" | "mirage" | "climber" | "prime" | "cusp" | "default" | "kyc" | "evidence";
   businessName: string;
   archetype: string;
   emoji: string;
@@ -94,6 +94,23 @@ export const SEEDS: Record<SeededBusiness["id"], SeededBusiness> = {
       digitalReceiptsShare: 0.78, digitalHistoryMonths: 16, yearsOperating: 4,
       avgReceivableDays: 35, topVendorShare: 22, seasonality: "low", seasonalCashDip: false,
       activeDefault: false, kycMismatch: true,
+    },
+  },
+
+  // ── HERO of the Alternative Evidence Layer ──
+  // Thin-bureau, borderline business that lands CONDITIONAL on the core alone
+  // (net 55), then clears the bar via verified operational evidence
+  // (electricity growing +3, utility always-on-time +3, workforce stable +1 →
+  // +7 → adjusted 62 → APPROVE). No hard flags. THIS seed is the feature demo.
+  evidence: {
+    id: "evidence", businessName: "Kavya Textiles", archetype: "Verified Operator", emoji: "🔌",
+    bureauScore: null, bureauVerdict: "borderline",
+    profile: {
+      cashflowTrend: "volatile", gstOnTimeRate: 0.67, gstMaxGapCycles: 0, gstLastCycleLate: false,
+      digitalReceiptsShare: 0.5, digitalHistoryMonths: 7, yearsOperating: 2,
+      avgReceivableDays: 48, topVendorShare: 20, seasonality: "moderate", seasonalCashDip: false,
+      activeDefault: false, kycMismatch: false,
+      electricityTrend: "growing", workforceTrend: "stable", utilityPayment: "always_on_time", tredsHistory: "none",
     },
   },
 };

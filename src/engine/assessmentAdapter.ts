@@ -53,6 +53,13 @@ export function listBusinesses(): BusinessMeta[] {
 async function narrate(_core: CoreAssessment): Promise<string | null> {
   if (!process.env.AEGIS_NARRATOR_KEY) return null;
   // Day 3: call the model here to rephrase _core.decisionTrace into prose.
+  //
+  // IMPORTANT (alt-evidence layer): when there is NO hard flag, the decision
+  // score the narrator must reference is _core.adjustedNetScore (core net +
+  // verified operational evidence), NOT _core.netScore. When _core.hardFlags is
+  // non-empty, adjustedNetScore == netScore and no evidence is in play. The
+  // narrator only phrases an already-decided result; it never recomputes.
+  //
   // Until then, stay on the deterministic fallback.
   return null;
 }

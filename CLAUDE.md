@@ -32,12 +32,18 @@ The data flow is a one-way pipeline, and each stage lives in a different layer:
 ```
 MSMEProfile (src/data/seeds.ts)
   → assess()                src/engine/aegis-core.ts   factors → scoring → policy → decision (pure)
+                                                        └ computeAltEvidence()  src/engine/altEvidence.ts (pure plug-in)
   → getAssessment()         src/engine/assessmentAdapter.ts   adds business meta + narrative → EnrichedAssessment
   → GET /api/assessment/:id  src/app/api/assessment/[id]/route.ts
   → fetch in page           src/app/business/[id]/page.tsx
   → recommendationView()    src/view-models/healthCard.ts   maps engine enum → UI title/tone/colour
   → <HealthCard>            src/components/health-card/*
 ```
+
+There are **two entry points into the same engine**, and they converge on the same `EnrichedAssessment` contract and the same `<HealthCard>`:
+
+1. **Seed path** (above): `getAssessment(id)` looks a seeded business up by id — no validation needed, seeds are trusted.
+2. **Public-input path**: `/assess` page → `<ProfileForm>` (`src/components/assess/ProfileForm.tsx`) → `POST /api/assess` (`src/app/api/assess/route.ts`) → `validateProfile()` (`src/engine/profileSchema.ts`) → `assessAdHoc(profile)`. Untrusted input is Zod-validated at the boundary *before* it reaches the engine; on failure the route returns `400` with per-field errors and `assess()` is never called.
 
 Key invariants to preserve when editing:
 

@@ -9,12 +9,14 @@ import ConfidenceChip from "./ConfidenceChip";
  */
 export default function RecommendationBanner({
   view,
-  netScore,
+  adjustedNetScore,
+  alternativeEvidenceScore,
   confidence,
   drivers,
 }: {
   view: RecommendationView;
-  netScore: number;
+  adjustedNetScore: number;
+  alternativeEvidenceScore: number;
   confidence: DecisionConfidence;
   drivers: Driver[];
 }) {
@@ -41,10 +43,15 @@ export default function RecommendationBanner({
 
         {/* net score + signature drivers */}
         <div className="md:border-l md:pl-10" style={{ borderColor: colors.border }}>
-          <p className="text-xs font-medium uppercase tracking-wide text-[#78716C]">Net score</p>
-          <p className="mt-0.5 text-5xl font-semibold tabular-nums leading-none" style={{ color: colors.accent }}>
-            {netScore}
+          <p className="text-xs font-medium uppercase tracking-wide text-[#78716C]">
+            {alternativeEvidenceScore > 0 ? "Adjusted net" : "Net score"}
           </p>
+          <p className="mt-0.5 text-5xl font-semibold tabular-nums leading-none" style={{ color: colors.accent }}>
+            {adjustedNetScore}
+          </p>
+          {alternativeEvidenceScore > 0 && (
+            <p className="mt-1 text-xs font-medium text-[#1D6F42]">incl. +{alternativeEvidenceScore} verified evidence</p>
+          )}
           {drivers.length > 0 && (
             <ul className="mt-4 space-y-1.5">
               {drivers.map(d => (

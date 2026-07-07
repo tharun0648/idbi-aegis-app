@@ -62,6 +62,21 @@ export const profileSchema = z.object({
   seasonalCashDip: flag("Seasonal cash dip"),
   activeDefault: flag("Active default"),
   kycMismatch: flag("KYC mismatch"),
+
+  // Alternative operational evidence — all OPTIONAL (absent = "not available",
+  // 0 contribution). Only a provided-but-invalid value is rejected.
+  electricityTrend: z
+    .enum(["declining", "stable", "growing"], { error: "Electricity trend must be one of: declining, stable, growing." })
+    .optional(),
+  workforceTrend: z
+    .enum(["declining", "stable", "growing"], { error: "Workforce trend must be one of: declining, stable, growing." })
+    .optional(),
+  utilityPayment: z
+    .enum(["irregular", "mostly_on_time", "always_on_time"], { error: "Utility payment must be one of: irregular, mostly_on_time, always_on_time." })
+    .optional(),
+  tredsHistory: z
+    .enum(["none", "limited", "active"], { error: "TReDS history must be one of: none, limited, active." })
+    .optional(),
 });
 
 export type ParsedProfile = z.infer<typeof profileSchema>;

@@ -36,6 +36,15 @@ const NUMBER_FIELDS: ReadonlyArray<{ key: NumberKey; label: string; unit: string
 const CASHFLOW_OPTIONS = ["declining", "volatile", "improving", "stable", "growing"] as const;
 const SEASONALITY_OPTIONS = ["low", "moderate", "high", "severe"] as const;
 
+// Alternative operational evidence — all optional; "" = Not available (0 contribution).
+type AltKey = "electricityTrend" | "workforceTrend" | "utilityPayment" | "tredsHistory";
+const ALT_FIELDS: ReadonlyArray<{ key: AltKey; label: string; hint: string; options: readonly string[] }> = [
+  { key: "electricityTrend", label: "Electricity usage trend", hint: "Verified meter-load trend", options: ["declining", "stable", "growing"] },
+  { key: "workforceTrend", label: "Workforce trend", hint: "Verified headcount / EPFO trend", options: ["declining", "stable", "growing"] },
+  { key: "utilityPayment", label: "Utility bill payments (BBPS)", hint: "Verified BBPS payment regularity", options: ["irregular", "mostly_on_time", "always_on_time"] },
+  { key: "tredsHistory", label: "TReDS invoice financing", hint: "Verified TReDS participation", options: ["none", "limited", "active"] },
+];
+
 const BOOL_FIELDS: ReadonlyArray<{ key: "gstLastCycleLate" | "seasonalCashDip" | "activeDefault" | "kycMismatch"; label: string; hint: string }> = [
   { key: "gstLastCycleLate", label: "GST last cycle late", hint: "Most recent filing was late" },
   { key: "seasonalCashDip", label: "Seasonal cash dip", hint: "Material seasonal cash gap" },
@@ -57,6 +66,10 @@ type FormState = {
   seasonalCashDip: boolean;
   activeDefault: boolean;
   kycMismatch: boolean;
+  electricityTrend: string;
+  workforceTrend: string;
+  utilityPayment: string;
+  tredsHistory: string;
 };
 
 function fromProfile(p: MSMEProfile): FormState {
@@ -74,6 +87,10 @@ function fromProfile(p: MSMEProfile): FormState {
     seasonalCashDip: p.seasonalCashDip,
     activeDefault: p.activeDefault,
     kycMismatch: p.kycMismatch,
+    electricityTrend: p.electricityTrend ?? "",
+    workforceTrend: p.workforceTrend ?? "",
+    utilityPayment: p.utilityPayment ?? "",
+    tredsHistory: p.tredsHistory ?? "",
   };
 }
 
@@ -95,10 +112,16 @@ function toRaw(f: FormState): Record<string, unknown> {
     seasonalCashDip: f.seasonalCashDip,
     activeDefault: f.activeDefault,
     kycMismatch: f.kycMismatch,
+    // "" → undefined so the optional enums validate as "not available", never a bad value.
+    electricityTrend: f.electricityTrend || undefined,
+    workforceTrend: f.workforceTrend || undefined,
+    utilityPayment: f.utilityPayment || undefined,
+    tredsHistory: f.tredsHistory || undefined,
   };
 }
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const altLabel = (s: string) => cap(s.replace(/_/g, " "));
 const EXAMPLES: SeededBusiness[] = Object.values(SEEDS);
 
 export default function ProfileForm() {
@@ -264,6 +287,40 @@ export default function ProfileForm() {
                 </span>
               </label>
             ))}
+          </div>
+        </section>
+
+        {/* Verified operational evidence (optional) */}
+        <section className="rounded-lg border border-[#CFE6D8] bg-[#F6FBF8] p-6">
+          <h2 className="text-sm font-semibold text-[#14532D]">Verified operational evidence</h2>
+          <p className="mt-0.5 text-xs text-[#57534E]">
+            Optional. Independently verifiable operating signals — each can only raise a borderline score, capped at +10. Leave as
+            &ldquo;Not available&rdquo; if unverified.
+          </p>
+          <div className="mt-4 grid gap-x-6 gap-y-5 sm:grid-cols-2">
+            {ALT_FIELDS.map((fld) => {
+              const err = errors[fld.key];
+              return (
+                <div key={fld.key}>
+                  <label htmlFor={fld.key} className="block text-sm font-medium text-[#44403C]">
+                    {fld.label} <span className="font-normal text-[#A8A29E]">· optional</span>
+                  </label>
+                  <select
+                    id={fld.key}
+                    value={form[fld.key]}
+                    onChange={(e) => set(fld.key, e.target.value)}
+                    className={`${inputBase} ${err ? "border-[#B23A1E]" : "border-[#E7E5E4]"}`}
+                  >
+                    <option value="">Not available</option>
+                    {fld.options.map((o) => (
+                      <option key={o} value={o}>{altLabel(o)}</option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-[#A8A29E]">{fld.hint}</p>
+                  {err && <p className="mt-1 text-xs text-[#B23A1E]">{err}</p>}
+                </div>
+              );
+            })}
           </div>
         </section>
 

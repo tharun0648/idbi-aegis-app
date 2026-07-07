@@ -11,7 +11,13 @@
  *   MSMEProfile -> factors -> scoring -> policy -> decision -> CoreAssessment
  *
  * The service layer owns seeds, lookup, narration, caching, auth, ULI.
+ *
+ * The alternative-evidence layer (altEvidence.ts) is a PURE plug-in imported
+ * below: it never touches core factor/penalty/hard-flag math — it only adds a
+ * bounded positive adjustment when there is no hard flag. Core stays sacred.
  */
+
+import { computeAltEvidence, type AltEvidence } from "@/engine/altEvidence";
 
 // ── 1. INPUT CONTRACT ────────────────────────────────────────────────
 export type CashflowTrend = "declining" | "volatile" | "improving" | "stable" | "growing";
@@ -31,6 +37,14 @@ export interface MSMEProfile {
   seasonalCashDip: boolean;
   activeDefault: boolean;
   kycMismatch: boolean;
+
+  // ── Alternative operational evidence (OPTIONAL; absent = 0 contribution).
+  // Consumed only by the plug-in evidence layer (altEvidence.ts), never by the
+  // frozen factor/penalty/hard-flag core above. See altEvidence.ts.
+  electricityTrend?: "declining" | "stable" | "growing";
+  workforceTrend?: "declining" | "stable" | "growing";
+  utilityPayment?: "irregular" | "mostly_on_time" | "always_on_time";
+  tredsHistory?: "none" | "limited" | "active";
 }
 
 // ── 2. FACTOR ENGINE (basis string IS the explanation) ───────────────
@@ -90,33 +104,70 @@ export interface DecisionConfidence { score: number; band: "High" | "Medium" | "
 
 const APPROVE_LINE = 60;
 const CONDITIONAL_LINE = 50;
+const SCORE_CEILING = 100;   // capability max = 20+18+16+16+16+14; net/adjusted can never exceed it
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
-function decide(netScore: number, flags: HardFlag[]): Recommendation {
+// The recommendation now bands on the ADJUSTED net (core net + bounded alt evidence).
+// The hard-flag short-circuit is unchanged and still first: a knockout wins at any score.
+function decide(score: number, flags: HardFlag[]): Recommendation {
   if (flags.length > 0) return "REFER_OR_DECLINE";
-  if (netScore >= APPROVE_LINE) return "APPROVE";
-  if (netScore >= CONDITIONAL_LINE) return "CONDITIONAL";
+  if (score >= APPROVE_LINE) return "APPROVE";
+  if (score >= CONDITIONAL_LINE) return "CONDITIONAL";
   return "DECLINE_WITH_PATH";
 }
 
-function decisionConfidence(b: MSMEProfile, netScore: number, rec: Recommendation, flags: HardFlag[]): DecisionConfidence {
+/**
+ * CONFIDENCE — now factors EVIDENCE COVERAGE, not margin alone.
+ *
+ * Design (and its blast-radius bound): the margin term and the flagged branch
+ * are preserved exactly, so rich-core seeds (comfortable margin) and every
+ * hard-flagged seed keep their prior confidence. The rework only bites on THIN
+ * core: sparse operating history lowers certainty, and — the new part —
+ * verified alternative evidence restores it, naming the signals that carried it.
+ * Profiles with no alt signals (all existing seeds) see an identical result to
+ * before: altBoost = 0 and the coreThin term is the old completeness penalty.
+ */
+function decisionConfidence(
+  b: MSMEProfile,
+  adjustedNetScore: number,
+  rec: Recommendation,
+  flags: HardFlag[],
+  evidence: AltEvidence,
+): DecisionConfidence {
   let base: number;
   let marginReason: string;
   if (flags.length > 0) {
     base = 85; marginReason = "A policy violation makes the call clear-cut.";
   } else if (rec === "APPROVE") {
-    base = clamp(50 + 3 * (netScore - APPROVE_LINE), 30, 98);
-    marginReason = netScore - APPROVE_LINE >= 8 ? "Net score sits comfortably above the approval line." : "Net score sits just above the approval line.";
+    base = clamp(50 + 3 * (adjustedNetScore - APPROVE_LINE), 30, 98);
+    marginReason = adjustedNetScore - APPROVE_LINE >= 8 ? "Adjusted net sits comfortably above the approval line." : "Adjusted net sits just above the approval line.";
   } else if (rec === "DECLINE_WITH_PATH") {
-    base = clamp(50 + 3 * (CONDITIONAL_LINE - netScore), 30, 98);
-    marginReason = CONDITIONAL_LINE - netScore >= 8 ? "Net score sits well below the approval line." : "Net score sits just below the line; small changes flip the outcome.";
+    base = clamp(50 + 3 * (CONDITIONAL_LINE - adjustedNetScore), 30, 98);
+    marginReason = CONDITIONAL_LINE - adjustedNetScore >= 8 ? "Adjusted net sits well below the approval line." : "Adjusted net sits just below the line; small changes flip the outcome.";
   } else {
-    base = clamp(50 + 3 * Math.min(netScore - CONDITIONAL_LINE, APPROVE_LINE - netScore), 30, 98);
-    marginReason = "Net score sits between thresholds; the decision is marginal.";
+    base = clamp(50 + 3 * Math.min(adjustedNetScore - CONDITIONAL_LINE, APPROVE_LINE - adjustedNetScore), 30, 98);
+    marginReason = "Adjusted net sits between thresholds; the decision is marginal.";
   }
-  const completeness = (b.digitalHistoryMonths < 6 ? 8 : 0) + (b.yearsOperating < 2 ? 6 : 0);
-  const score = Math.round(clamp(base - completeness, 0, 100));
-  const reason = completeness > 0 ? `${marginReason} Limited operating history slightly lowers certainty.` : marginReason;
+
+  // Coverage terms. coreThin = sparse operating history (unchanged from before).
+  // altBoost = verified operational evidence lifting a thin core (0 when flagged
+  // or when no signals are present — i.e. 0 for every profile without alt data).
+  const coreThin = (b.digitalHistoryMonths < 6 ? 8 : 0) + (b.yearsOperating < 2 ? 6 : 0);
+  const carryingSignals = flags.length === 0 ? evidence.breakdown.filter(r => r.contribution > 0).map(r => r.signal) : [];
+  const altBoost = carryingSignals.length > 0 ? Math.min(evidence.points, coreThin > 0 ? 12 : 8) : 0;
+
+  const score = Math.round(clamp(base - coreThin + altBoost, 0, 100));
+
+  let reason = marginReason;
+  if (altBoost > 0) {
+    const named = carryingSignals.join(", ").toLowerCase();
+    reason = coreThin > 0
+      ? `${marginReason} Verified operational evidence (${named}) offsets a thin operating history.`
+      : `${marginReason} Verified operational evidence (${named}) reinforces the call.`;
+  } else if (coreThin > 0) {
+    reason = `${marginReason} Limited operating history slightly lowers certainty.`;
+  }
+
   return { score, band: score >= 75 ? "High" : score >= 55 ? "Medium" : "Low", reason };
 }
 
@@ -152,8 +203,11 @@ export interface CoreAssessment {
   penalties: Penalty[];
   hardFlags: HardFlag[];
   capabilityScore: number;
-  netScore: number;
-  recommendation: Recommendation;
+  netScore: number;                    // frozen 100-point core net (capability + soft penalties)
+  alternativeEvidenceScore: number;    // bounded (+0..+10) evidence bonus; 0 when hard-flagged
+  adjustedNetScore: number;            // netScore + alternativeEvidenceScore (== netScore when flagged), capped at ceiling
+  altEvidence: AltEvidence;            // breakdown + coverage; empty/zero when hard-flagged
+  recommendation: Recommendation;      // derived from adjustedNetScore (hard flag still overrides)
   decisionConfidence: DecisionConfidence;
   decisionTrace: DecisionTrace;
   improvementPlan: ImprovementStep[];
@@ -191,16 +245,31 @@ function assertAssessable(b: MSMEProfile): void {
 
 export function assess(b: MSMEProfile): CoreAssessment {
   assertAssessable(b);
+
+  // ── FROZEN CORE — computed EXACTLY as before. Untouched. ──
   const factors = deriveFactors(b);
   const flags = hardFlags(b);
   const penalties = softPenalties(b, flags);
   const capabilityScore = factors.reduce((s, f) => s + f.value, 0);
   const netScore = capabilityScore + penalties.reduce((s, p) => s + p.points, 0);
-  const recommendation = decide(netScore, flags);
+
+  // ── ALTERNATIVE EVIDENCE PLUG-IN (bounded, additive, never negative) ──
+  // Hard flag present → return the core UNTOUCHED: no evidence computed or
+  // merged, no bonus. A knockout stays a knockout; the UI shows no evidence
+  // section. Otherwise merge the bounded bonus and re-band on the adjusted net.
+  const flagged = flags.length > 0;
+  const altEvidence: AltEvidence = flagged
+    ? { points: 0, breakdown: [], coverageCount: 0 }
+    : computeAltEvidence(b);
+  const alternativeEvidenceScore = altEvidence.points;
+  const adjustedNetScore = flagged ? netScore : Math.min(netScore + alternativeEvidenceScore, SCORE_CEILING);
+
+  const recommendation = decide(adjustedNetScore, flags);
 
   return {
-    factors, penalties, hardFlags: flags, capabilityScore, netScore, recommendation,
-    decisionConfidence: decisionConfidence(b, netScore, recommendation, flags),
+    factors, penalties, hardFlags: flags, capabilityScore, netScore,
+    alternativeEvidenceScore, adjustedNetScore, altEvidence, recommendation,
+    decisionConfidence: decisionConfidence(b, adjustedNetScore, recommendation, flags, altEvidence),
     decisionTrace: buildTrace(factors, penalties, flags, recommendation),
     improvementPlan: buildImprovementPlan(b),
   };
