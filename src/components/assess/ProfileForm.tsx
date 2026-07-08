@@ -283,12 +283,12 @@ export default function ProfileForm() {
     const validation = validateProfile(toRaw(form));
     if (!validation.ok) {
       setErrors(validation.errors);
-      const firstErrorKey = Object.keys(validation.errors)[0];
+      const errorKeys = Object.keys(validation.errors);
       const stepOfField = (k: string): number => {
         const idx = FIELDS_BY_STEP.findIndex((fields) => fields.includes(k));
         return idx === -1 ? STEPS.length - 1 : idx; // unmatched key → Review (last step)
       };
-      if (firstErrorKey) setStep(stepOfField(firstErrorKey));
+      if (errorKeys.length > 0) setStep(Math.min(...errorKeys.map(stepOfField)));
       setResult(null);
       setDebug(null);
       return;
