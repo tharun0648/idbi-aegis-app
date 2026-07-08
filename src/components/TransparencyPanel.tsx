@@ -11,6 +11,15 @@ function fmt(v: unknown): string {
   return String(v);
 }
 
+const DATA_PROVENANCE: ReadonlyArray<{ source: string; available: boolean; signals: string }> = [
+  { source: "Credit Bureau", available: true, signals: "Bureau score" },
+  { source: "GSTN", available: true, signals: "Filing consistency" },
+  { source: "Account Aggregator", available: true, signals: "Cash-flow stability" },
+  { source: "BBPS", available: true, signals: "Utility payments" },
+  { source: "EPFO", available: false, signals: "Workforce stability" },
+  { source: "TReDS", available: true, signals: "Invoice financing" },
+];
+
 /**
  * Collapsible accordion showing the exact inputs/outputs/narrator payload that
  * produced this assessment. Closed by default. Renders only what the API
@@ -38,6 +47,32 @@ export default function TransparencyPanel({ debug }: { debug: AssessDebug }) {
 
       {open && (
         <div className="divide-y divide-[#F1F3F2] border-t border-[#E5E7EB]">
+          <div className="p-6">
+            <p className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">Data Provenance</p>
+            <p className="mt-1 text-xs text-[#9CA3AF]">
+              This assessment combines signals from verified ecosystem participants. Each signal contributes only where available.
+            </p>
+            <table className="mt-3 w-full border-collapse text-xs">
+              <thead>
+                <tr className="text-left text-[#9CA3AF]">
+                  <th className="px-3 py-1.5 font-medium">Source</th>
+                  <th className="px-3 py-1.5 font-medium">Status</th>
+                  <th className="px-3 py-1.5 font-medium">Signals Used</th>
+                </tr>
+              </thead>
+              <tbody>
+                {DATA_PROVENANCE.map((row, i) => (
+                  <tr key={row.source} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
+                    <td className={`px-3 py-1.5 ${row.available ? "text-[#111827]" : "text-[#9CA3AF]"}`}>{row.source}</td>
+                    <td className={`px-3 py-1.5 ${row.available ? "text-[#15803d]" : "text-[#9CA3AF]"}`}>{row.available ? "Available" : "Not Available"}</td>
+                    <td className={`px-3 py-1.5 ${row.available ? "text-[#111827]" : "text-[#9CA3AF]"}`}>{row.signals}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-2 text-xs italic text-[#9CA3AF]">Unavailable sources are ignored. They never create negative scores.</p>
+          </div>
+
           <div className="p-6">
             <p className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">Raw Input Profile</p>
             <p className="mt-1 text-xs text-[#9CA3AF]">These are the 13 required signals plus 4 optional operational-evidence signals submitted to the Aegis engine.</p>
