@@ -22,8 +22,11 @@ const DATA_PROVENANCE: ReadonlyArray<{ source: string; available: boolean; signa
 
 /**
  * Collapsible accordion showing the exact inputs/outputs/narrator payload that
- * produced this assessment. Closed by default. Renders only what the API
- * actually returned in `_debug` — no placeholder rows, no invented data.
+ * produced this assessment. Closed by default. Every section but the first
+ * renders only what the API actually returned in `_debug` — no placeholder
+ * rows, no invented data. The Data Provenance section is the one exception:
+ * fixed editorial content describing the ecosystem Aegis is built to consume,
+ * not a live check against this specific submission — labelled as such below.
  */
 export default function TransparencyPanel({ debug }: { debug: AssessDebug }) {
   const [open, setOpen] = useState(false);
@@ -48,9 +51,10 @@ export default function TransparencyPanel({ debug }: { debug: AssessDebug }) {
       {open && (
         <div className="divide-y divide-[#F1F3F2] border-t border-[#E5E7EB]">
           <div className="p-6">
-            <p className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">Data Provenance</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">Data Provenance <span className="normal-case font-normal">(illustrative)</span></p>
             <p className="mt-1 text-xs text-[#9CA3AF]">
-              This assessment combines signals from verified ecosystem participants. Each signal contributes only where available.
+              A production deployment draws signals from these verified ecosystem participants. This table illustrates the
+              ecosystem Aegis is built to consume — it is not a live check against this specific submission.
             </p>
             <table className="mt-3 w-full border-collapse text-xs">
               <thead>

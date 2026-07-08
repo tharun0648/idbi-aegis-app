@@ -33,7 +33,7 @@ function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate
         </span>
         <div className="leading-tight">
           <p className="text-lg font-semibold tracking-tight text-white">AEGIS</p>
-          <p className="text-xs text-[#8FB3A7]">MSME Credit Intelligence</p>
+          <p className="text-xs text-white/70">MSME Credit Intelligence</p>
         </div>
       </div>
 
