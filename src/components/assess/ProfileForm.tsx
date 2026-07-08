@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Building2, Info } from "lucide-react";
+import { Building2, Info, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { validateProfile, EXAMPLE_DEFAULT_PROFILE } from "@/engine/profileSchema";
 import { SEEDS, type SeededBusiness } from "@/data/seeds";
 import type { MSMEProfile } from "@/engine/aegis-core";
@@ -9,6 +9,7 @@ import type { EnrichedAssessment } from "@/engine/assessmentAdapter";
 import type { AssessDebug } from "@/types/debug";
 import HealthCard from "@/components/health-card/HealthCard";
 import TransparencyPanel from "@/components/TransparencyPanel";
+import { PROFILE_FIELD_ORDER } from "@/constants/profileFields";
 
 /**
  * The public input surface. Holds 13 form fields as the one place client
@@ -187,6 +188,68 @@ function SectionHeader({ title, hint }: { title: string; hint?: string }) {
   );
 }
 
+// Decorative-only business-identity chrome. These fields do NOT exist in
+// MSMEProfile, are never read by toRaw()/validateProfile(), and never appear
+// in PROFILE_FIELD_ORDER or the Transparency Panel. Their own local state,
+// entirely separate from FormState — display narrative only, zero effect on
+// the assessment.
+type BusinessIdentity = {
+  businessName: string;
+  annualTurnover: string;
+  industry: string;
+  gstin: string;
+  city: string;
+};
+
+const BUSINESS_IDENTITY_FIELDS: ReadonlyArray<{
+  key: keyof BusinessIdentity;
+  label: string;
+  hint: string;
+}> = [
+  { key: "businessName", label: "Business name", hint: "From MCA / UDYAM registration" },
+  { key: "annualTurnover", label: "Annual turnover (₹)", hint: "Typically from Account Aggregator or GST returns" },
+  { key: "industry", label: "Industry", hint: "From business registration" },
+  { key: "gstin", label: "GSTIN", hint: "From GSTN" },
+  { key: "city", label: "City", hint: "From business registration" },
+];
+
+const EMPTY_BUSINESS_IDENTITY: BusinessIdentity = {
+  businessName: "", annualTurnover: "", industry: "", gstin: "", city: "",
+};
+
+const STEPS = ["Business", "Financial", "Risk Flags", "Operational Evidence", "Review"] as const;
+
+function Stepper({ current }: { current: number }) {
+  return (
+    <ol className="flex items-center overflow-x-auto pb-1">
+      {STEPS.map((label, i) => {
+        const state = i < current ? "done" : i === current ? "active" : "upcoming";
+        return (
+          <li key={label} className="flex flex-1 items-center last:flex-none">
+            <div className="flex items-center gap-2">
+              <span
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                  state === "done" ? "bg-[#15803d] text-white"
+                  : state === "active" ? "bg-[#1a4731] text-white"
+                  : "border border-[#D1D5DB] text-[#9CA3AF]"
+                }`}
+              >
+                {state === "done" ? <Check className="h-4 w-4" strokeWidth={2.5} /> : i + 1}
+              </span>
+              <span className={`hidden text-sm sm:inline ${state === "upcoming" ? "text-[#9CA3AF]" : "font-semibold text-[#111827]"}`}>
+                {label}
+              </span>
+            </div>
+            {i < STEPS.length - 1 && (
+              <div className={`mx-3 h-0.5 flex-1 ${i < current ? "bg-[#15803d]" : "bg-[#E5E7EB]"}`} aria-hidden />
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 export default function ProfileForm() {
   const [form, setForm] = useState<FormState>(() => fromProfile(EXAMPLE_DEFAULT_PROFILE));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -194,15 +257,22 @@ export default function ProfileForm() {
   const [debug, setDebug] = useState<AssessDebug | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [step, setStep] = useState(0);
+  // Decorative-only — never read by toRaw()/validateProfile(), never submitted.
+  const [identity, setIdentity] = useState<BusinessIdentity>(EMPTY_BUSINESS_IDENTITY);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
+
+  const setIdentity_ = <K extends keyof BusinessIdentity>(key: K, value: string) =>
+    setIdentity((prev) => ({ ...prev, [key]: value }));
 
   const loadExample = (p: MSMEProfile) => {
     setForm(fromProfile(p));
     setErrors({});
     setFormError(null);
     setResult(null);
+    setStep(0);
   };
 
   async function onSubmit(e: React.FormEvent) {
@@ -213,6 +283,12 @@ export default function ProfileForm() {
     const validation = validateProfile(toRaw(form));
     if (!validation.ok) {
       setErrors(validation.errors);
+      const firstErrorKey = Object.keys(validation.errors)[0];
+      const stepOfField = (k: string): number => {
+        const idx = FIELDS_BY_STEP.findIndex((fields) => fields.includes(k));
+        return idx === -1 ? STEPS.length - 1 : idx; // unmatched key → Review (last step)
+      };
+      if (firstErrorKey) setStep(stepOfField(firstErrorKey));
       setResult(null);
       setDebug(null);
       return;
@@ -253,193 +329,326 @@ export default function ProfileForm() {
   const riskFlagFields = BOOL_FIELDS.filter((f) => (RISK_FLAG_BOOL_KEYS as readonly string[]).includes(f.key));
   const gstLastCycleLateField = BOOL_FIELDS.find((f) => f.key === "gstLastCycleLate")!;
 
+  const FIELDS_BY_STEP: readonly string[][] = [
+    ["cashflowTrend", "seasonality", "yearsOperating"],
+    ["gstLastCycleLate", ...FINANCIAL_NUMBER_KEYS],
+    [...RISK_FLAG_BOOL_KEYS],
+    ["electricityTrend", "workforceTrend", "utilityPayment", "tredsHistory"],
+  ];
+
+  // Validate with the SAME validateProfile() used at final submit, but only
+  // surface and gate on errors belonging to the step the user is currently
+  // on — fields on unvisited later steps still hold their (valid) defaults,
+  // so this never blocks on a field the user hasn't reached yet.
+  function goNext() {
+    const validation = validateProfile(toRaw(form));
+    const stepFields = FIELDS_BY_STEP[step] ?? [];
+    const stepErrors: Record<string, string> = {};
+    if (!validation.ok) {
+      for (const key of stepFields) {
+        if (validation.errors[key]) stepErrors[key] = validation.errors[key];
+      }
+    }
+    setErrors((prev) => {
+      const next = { ...prev };
+      for (const key of stepFields) delete next[key];
+      return { ...next, ...stepErrors };
+    });
+    if (Object.keys(stepErrors).length === 0) {
+      setStep((s) => Math.min(STEPS.length - 1, s + 1));
+    }
+  }
+
   return (
-    <div className="space-y-8">
-      <form onSubmit={onSubmit} className="space-y-6">
-        {/* Load example */}
-        <section className="rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">Start from a known case</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {EXAMPLES.map((b) => (
-              <button
-                key={b.id}
-                type="button"
-                onClick={() => loadExample(b.profile)}
-                className="inline-flex items-center gap-1.5 rounded-md border border-[#E5E7EB] bg-white px-3 py-1.5 text-sm text-[#374151] transition-colors duration-150 hover:border-[#1a4731] hover:text-[#111827]"
-              >
-                <Building2 className="h-4 w-4 text-[#6B7280]" strokeWidth={1.75} />
-                {b.businessName}
-              </button>
-            ))}
-          </div>
-          <p className="mt-2 text-xs text-[#9CA3AF]">Loads the archetype&apos;s inputs so you can tweak from there.</p>
-        </section>
+    <div className="space-y-6">
+      <Stepper current={step} />
 
-        {/* Business info */}
-        <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
-          <SectionHeader title="Business info" hint="What kind of business this is and how it has been trending." />
-          <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
-            <div>
-              <FieldLabel htmlFor="cashflowTrend" text="Cash-flow trend" unit="enum" fieldKey="cashflowTrend" />
-              <select
-                id="cashflowTrend"
-                value={form.cashflowTrend}
-                onChange={(e) => set("cashflowTrend", e.target.value)}
-                className={`${inputBase} ${errBorder("cashflowTrend")}`}
-              >
-                {CASHFLOW_OPTIONS.map((o) => (
-                  <option key={o} value={o}>{cap(o)}</option>
+      <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+        <form onSubmit={onSubmit} className="space-y-6">
+          {/* Load example — shown only on step 0, same as before */}
+          {step === 0 && (
+            <section className="rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-sm">
+              <p className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">Start from a known case</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {EXAMPLES.map((b) => (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => { loadExample(b.profile); setStep(0); }}
+                    className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md border border-[#E5E7EB] bg-white px-3 py-1.5 text-sm text-[#374151] transition-colors duration-150 hover:border-[#1a4731] hover:text-[#111827]"
+                  >
+                    <Building2 className="h-4 w-4 text-[#6B7280]" strokeWidth={1.75} />
+                    {b.businessName}
+                  </button>
                 ))}
-              </select>
-              {errors.cashflowTrend && <p className="mt-1 text-xs text-[#dc2626]">{errors.cashflowTrend}</p>}
-            </div>
-            <div>
-              <FieldLabel htmlFor="seasonality" text="Seasonality" unit="enum" fieldKey="seasonality" />
-              <select
-                id="seasonality"
-                value={form.seasonality}
-                onChange={(e) => set("seasonality", e.target.value)}
-                className={`${inputBase} ${errBorder("seasonality")}`}
-              >
-                {SEASONALITY_OPTIONS.map((o) => (
-                  <option key={o} value={o}>{cap(o)}</option>
+              </div>
+              <p className="mt-2 text-xs text-[#9CA3AF]">Loads the archetype&apos;s inputs so you can tweak from there.</p>
+            </section>
+          )}
+
+          {/* Step 1: Business */}
+          {step === 0 && (
+            <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+              <SectionHeader title="Business info" hint="What kind of business this is and how it has been trending." />
+              <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+                <div>
+                  <FieldLabel htmlFor="cashflowTrend" text="Cash-flow trend" unit="enum" fieldKey="cashflowTrend" />
+                  <select
+                    id="cashflowTrend"
+                    value={form.cashflowTrend}
+                    onChange={(e) => set("cashflowTrend", e.target.value)}
+                    className={`${inputBase} ${errBorder("cashflowTrend")}`}
+                  >
+                    {CASHFLOW_OPTIONS.map((o) => (
+                      <option key={o} value={o}>{cap(o)}</option>
+                    ))}
+                  </select>
+                  {errors.cashflowTrend && <p className="mt-1 text-xs text-[#dc2626]">{errors.cashflowTrend}</p>}
+                </div>
+                <div>
+                  <FieldLabel htmlFor="seasonality" text="Seasonality" unit="enum" fieldKey="seasonality" />
+                  <select
+                    id="seasonality"
+                    value={form.seasonality}
+                    onChange={(e) => set("seasonality", e.target.value)}
+                    className={`${inputBase} ${errBorder("seasonality")}`}
+                  >
+                    {SEASONALITY_OPTIONS.map((o) => (
+                      <option key={o} value={o}>{cap(o)}</option>
+                    ))}
+                  </select>
+                  {errors.seasonality && <p className="mt-1 text-xs text-[#dc2626]">{errors.seasonality}</p>}
+                </div>
+                {businessInfoFields.map((fld) => (
+                  <div key={fld.key}>
+                    <FieldLabel htmlFor={fld.key} text={fld.label} unit={fld.unit} fieldKey={fld.key} />
+                    <input
+                      id={fld.key}
+                      name={fld.key}
+                      type="number"
+                      inputMode="decimal"
+                      step={fld.step}
+                      value={form[fld.key]}
+                      onChange={(e) => set(fld.key, e.target.value)}
+                      aria-invalid={errors[fld.key] ? true : undefined}
+                      className={`${inputBase} ${errBorder(fld.key)}`}
+                    />
+                    {errors[fld.key] && <p className="mt-1 text-xs text-[#dc2626]">{errors[fld.key]}</p>}
+                  </div>
                 ))}
-              </select>
-              {errors.seasonality && <p className="mt-1 text-xs text-[#dc2626]">{errors.seasonality}</p>}
-            </div>
-            {businessInfoFields.map((fld) => (
-              <div key={fld.key}>
-                <FieldLabel htmlFor={fld.key} text={fld.label} unit={fld.unit} fieldKey={fld.key} />
-                <input
-                  id={fld.key}
-                  name={fld.key}
-                  type="number"
-                  inputMode="decimal"
-                  step={fld.step}
-                  value={form[fld.key]}
-                  onChange={(e) => set(fld.key, e.target.value)}
-                  aria-invalid={errors[fld.key] ? true : undefined}
-                  className={`${inputBase} ${errBorder(fld.key)}`}
-                />
-                {errors[fld.key] && <p className="mt-1 text-xs text-[#dc2626]">{errors[fld.key]}</p>}
               </div>
-            ))}
-          </div>
-        </section>
 
-        {/* Financial signals */}
-        <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
-          <SectionHeader title="Financial signals" hint="GST compliance, digital adoption, and payment behaviour." />
-          <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
-            {financialFields.map((fld) => (
-              <div key={fld.key}>
-                <FieldLabel htmlFor={fld.key} text={fld.label} unit={fld.unit} fieldKey={fld.key} />
-                <input
-                  id={fld.key}
-                  name={fld.key}
-                  type="number"
-                  inputMode="decimal"
-                  step={fld.step}
-                  value={form[fld.key]}
-                  onChange={(e) => set(fld.key, e.target.value)}
-                  aria-invalid={errors[fld.key] ? true : undefined}
-                  className={`${inputBase} ${errBorder(fld.key)}`}
-                />
-                {errors[fld.key] && <p className="mt-1 text-xs text-[#dc2626]">{errors[fld.key]}</p>}
+              {/* Decorative-only — display chrome, never submitted or validated */}
+              <div className="mt-6 border-t border-[#E5E7EB] pt-5">
+                <p className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">
+                  Business identity <span className="normal-case font-normal">(display only — not scored)</span>
+                </p>
+                <div className="mt-3 grid gap-x-6 gap-y-5 sm:grid-cols-2">
+                  {BUSINESS_IDENTITY_FIELDS.map((fld) => (
+                    <div key={fld.key}>
+                      <label htmlFor={`identity-${fld.key}`} className="block text-sm font-medium text-[#111827]">{fld.label}</label>
+                      <input
+                        id={`identity-${fld.key}`}
+                        type="text"
+                        value={identity[fld.key]}
+                        onChange={(e) => setIdentity_(fld.key, e.target.value)}
+                        className={inputBase}
+                      />
+                      <p className="mt-1 text-xs text-[#9CA3AF]">{fld.hint}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-          <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-md border border-[#E5E7EB] p-3 transition-colors duration-150 hover:border-[#D1D5DB]">
-            <input
-              type="checkbox"
-              checked={form.gstLastCycleLate}
-              onChange={(e) => set("gstLastCycleLate", e.target.checked)}
-              className="mt-0.5 h-4 w-4 accent-[#1a4731]"
-            />
-            <span>
-              <span className="flex items-center gap-1.5 text-sm font-medium text-[#111827]">
-                {gstLastCycleLateField.label}
-                <FieldHint text={FIELD_HELP.gstLastCycleLate} />
-              </span>
-              <span className="block text-xs text-[#6B7280]">{gstLastCycleLateField.hint}</span>
-            </span>
-          </label>
-        </section>
+            </section>
+          )}
 
-        {/* Risk flags */}
-        <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
-          <SectionHeader title="Risk flags" hint="Active or default and KYC mismatch are hard flags — they override the score outright." />
-          <div className="grid gap-3 sm:grid-cols-2">
-            {riskFlagFields.map((fld) => (
-              <label
-                key={fld.key}
-                className="flex cursor-pointer items-start gap-3 rounded-md border border-[#E5E7EB] p-3 transition-colors duration-150 hover:border-[#D1D5DB]"
-              >
+          {/* Step 2: Financial */}
+          {step === 1 && (
+            <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+              <SectionHeader title="Financial signals" hint="GST compliance, digital adoption, and payment behaviour." />
+              <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+                {financialFields.map((fld) => (
+                  <div key={fld.key}>
+                    <FieldLabel htmlFor={fld.key} text={fld.label} unit={fld.unit} fieldKey={fld.key} />
+                    <input
+                      id={fld.key}
+                      name={fld.key}
+                      type="number"
+                      inputMode="decimal"
+                      step={fld.step}
+                      value={form[fld.key]}
+                      onChange={(e) => set(fld.key, e.target.value)}
+                      aria-invalid={errors[fld.key] ? true : undefined}
+                      className={`${inputBase} ${errBorder(fld.key)}`}
+                    />
+                    {errors[fld.key] && <p className="mt-1 text-xs text-[#dc2626]">{errors[fld.key]}</p>}
+                  </div>
+                ))}
+              </div>
+              <label className="mt-5 flex min-h-[44px] cursor-pointer items-start gap-3 rounded-md border border-[#E5E7EB] p-3 transition-colors duration-150 hover:border-[#D1D5DB]">
                 <input
                   type="checkbox"
-                  checked={form[fld.key]}
-                  onChange={(e) => set(fld.key, e.target.checked)}
+                  checked={form.gstLastCycleLate}
+                  onChange={(e) => set("gstLastCycleLate", e.target.checked)}
                   className="mt-0.5 h-4 w-4 accent-[#1a4731]"
                 />
                 <span>
                   <span className="flex items-center gap-1.5 text-sm font-medium text-[#111827]">
-                    {fld.label}
-                    <FieldHint text={FIELD_HELP[fld.key]} />
+                    {gstLastCycleLateField.label}
+                    <FieldHint text={FIELD_HELP.gstLastCycleLate} />
                   </span>
-                  <span className="block text-xs text-[#6B7280]">{fld.hint}</span>
+                  <span className="block text-xs text-[#6B7280]">{gstLastCycleLateField.hint}</span>
                 </span>
               </label>
-            ))}
-          </div>
-        </section>
-
-        {/* Operational evidence (optional) */}
-        <section className="rounded-xl border border-[#1a473140] bg-[#f0fdf4] p-6 shadow-sm">
-          <SectionHeader title="Operational evidence" hint="Optional. Independently verifiable signals — each can only raise a borderline score, capped at +10. Leave as “Not available” if unverified." />
-          <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
-            {ALT_FIELDS.map((fld) => {
-              const err = errors[fld.key];
-              return (
-                <div key={fld.key}>
-                  <label htmlFor={fld.key} className="block text-sm font-medium text-[#111827]">
-                    {fld.label} <span className="font-normal text-[#9CA3AF]">· optional</span>
-                  </label>
-                  <select
-                    id={fld.key}
-                    value={form[fld.key]}
-                    onChange={(e) => set(fld.key, e.target.value)}
-                    className={`${inputBase} ${errBorder(fld.key)}`}
-                  >
-                    <option value="">Not available</option>
-                    {fld.options.map((o) => (
-                      <option key={o} value={o}>{altLabel(o)}</option>
-                    ))}
-                  </select>
-                  <p className="mt-1 text-xs text-[#9CA3AF]">{fld.hint}</p>
-                  {err && <p className="mt-1 text-xs text-[#dc2626]">{err}</p>}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {formError && (
-          <p className="rounded-md border border-[#dc262640] bg-[#fef2f2] px-4 py-3 text-sm text-[#dc2626]">{formError}</p>
-        )}
-
-        <div className="flex items-center gap-4">
-          <button
-            type="submit"
-            disabled={submitting}
-            className="inline-flex items-center rounded-lg bg-[#1a4731] px-5 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-[#166534] disabled:cursor-default disabled:opacity-60"
-          >
-            {submitting ? "Assessing…" : "Assess with Aegis"}
-          </button>
-          {Object.keys(errors).length > 0 && (
-            <span className="text-sm text-[#dc2626]">Fix the highlighted fields to continue.</span>
+            </section>
           )}
-        </div>
-      </form>
+
+          {/* Step 3: Risk Flags */}
+          {step === 2 && (
+            <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+              <SectionHeader title="Risk flags" hint="Active default and KYC mismatch are hard flags — they override the score outright." />
+              <div className="grid gap-3 sm:grid-cols-2">
+                {riskFlagFields.map((fld) => (
+                  <label
+                    key={fld.key}
+                    className="flex min-h-[44px] cursor-pointer items-start gap-3 rounded-md border border-[#E5E7EB] p-3 transition-colors duration-150 hover:border-[#D1D5DB]"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={form[fld.key]}
+                      onChange={(e) => set(fld.key, e.target.checked)}
+                      className="mt-0.5 h-4 w-4 accent-[#1a4731]"
+                    />
+                    <span>
+                      <span className="flex items-center gap-1.5 text-sm font-medium text-[#111827]">
+                        {fld.label}
+                        <FieldHint text={FIELD_HELP[fld.key]} />
+                      </span>
+                      <span className="block text-xs text-[#6B7280]">{fld.hint}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Step 4: Operational Evidence */}
+          {step === 3 && (
+            <section className="rounded-xl border border-[#1a473140] bg-[#f0fdf4] p-6 shadow-sm">
+              <SectionHeader title="Operational evidence" hint="Optional. Each verified signal provides bounded uplift (max +10 total). Does not override hard flags." />
+              <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+                {ALT_FIELDS.map((fld) => {
+                  const err = errors[fld.key];
+                  return (
+                    <div key={fld.key}>
+                      <label htmlFor={fld.key} className="block text-sm font-medium text-[#111827]">
+                        {fld.label} <span className="font-normal text-[#9CA3AF]">· optional</span>
+                      </label>
+                      <select
+                        id={fld.key}
+                        value={form[fld.key]}
+                        onChange={(e) => set(fld.key, e.target.value)}
+                        className={`${inputBase} ${errBorder(fld.key)}`}
+                      >
+                        <option value="">Not available</option>
+                        {fld.options.map((o) => (
+                          <option key={o} value={o}>{altLabel(o)}</option>
+                        ))}
+                      </select>
+                      <p className="mt-1 text-xs text-[#9CA3AF]">{fld.hint}</p>
+                      {err && <p className="mt-1 text-xs text-[#dc2626]">{err}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Step 5: Review */}
+          {step === 4 && (
+            <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+              <SectionHeader title="Review" hint="Zod validates on submit — fix any highlighted fields if they appear." />
+
+              <p className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">
+                Business identity <span className="normal-case font-normal">(display only — not submitted)</span>
+              </p>
+              <table className="mt-2 w-full border-collapse text-sm">
+                <tbody>
+                  {BUSINESS_IDENTITY_FIELDS.map((fld, i) => (
+                    <tr key={fld.key} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
+                      <td className="px-3 py-1.5 text-[#6B7280]">{fld.label}</td>
+                      <td className="px-3 py-1.5 text-[#111827]">{identity[fld.key] || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <p className="mt-6 text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">Signals submitted to the engine</p>
+              <table className="mt-2 w-full border-collapse text-sm">
+                <tbody>
+                  {PROFILE_FIELD_ORDER.map((key, i) => (
+                    <tr key={key} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
+                      <td className="px-3 py-1.5 text-[#6B7280]">{key}</td>
+                      <td className="px-3 py-1.5 text-[#111827]">{String(form[key] === "" ? "Not available" : form[key])}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )}
+
+          {formError && (
+            <p className="rounded-md border border-[#dc262640] bg-[#fef2f2] px-4 py-3 text-sm text-[#dc2626]">{formError}</p>
+          )}
+
+          <div className="flex items-center justify-between gap-4">
+            <button
+              type="button"
+              onClick={() => setStep((s) => Math.max(0, s - 1))}
+              className={`inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-[#6B7280] ${step === 0 ? "invisible" : ""}`}
+            >
+              <ChevronLeft className="h-4 w-4" strokeWidth={2} /> Back
+            </button>
+
+            {step < STEPS.length - 1 ? (
+              <button
+                type="button"
+                onClick={goNext}
+                className="inline-flex min-h-[44px] items-center gap-1.5 rounded-lg bg-[#1a4731] px-5 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-[#166534]"
+              >
+                Next: {STEPS[step + 1]} <ChevronRight className="h-4 w-4" strokeWidth={2} />
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={submitting}
+                className="inline-flex min-h-[44px] items-center rounded-lg bg-[#1a4731] px-5 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-[#166534] disabled:cursor-default disabled:opacity-60"
+              >
+                {submitting ? "Assessing…" : "Assess with Aegis"}
+              </button>
+            )}
+          </div>
+          {Object.keys(errors).length > 0 && (
+            <p className="text-sm text-[#dc2626]">Fix the highlighted fields to continue.</p>
+          )}
+          <p className="text-center text-xs text-[#9CA3AF]">All inputs are validated at the boundary. Nothing is scored until you submit.</p>
+        </form>
+
+        {/* Right sidebar */}
+        <aside className="space-y-4">
+          <section className="rounded-xl border border-[#E5E7EB] bg-white p-5">
+            <p className="text-sm font-medium text-[#111827]">About this assessment</p>
+            <ul className="mt-3 space-y-2">
+              {["13 signals", "Deterministic scoring", "No AI in scoring", "Advises the underwriter"].map((t) => (
+                <li key={t} className="flex items-center gap-2 text-sm text-[#374151]">
+                  <Check className="h-4 w-4 shrink-0 text-[#15803d]" strokeWidth={2} />
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </section>
+        </aside>
+      </div>
 
       {result && (
         <section className="space-y-4">
