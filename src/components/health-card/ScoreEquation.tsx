@@ -78,16 +78,15 @@ export default function ScoreEquation({ a }: { a: CoreAssessment }) {
 }
 
 const TONE: Record<Tone, { card: string; icon: string; iconBg: string; value: string; label: string }> = {
-  default:  { card: "border border-[#E5E7EB] bg-white",  icon: "#1F5E4A", iconBg: "#ECF3F0", value: "#111827", label: "#6B7280" },
-  deduct:   { card: "border border-[#F0DAD6] bg-[#FBF1EF]", icon: "#B42318", iconBg: "#FBEBE9", value: "#B42318", label: "#6B7280" },
-  evidence: { card: "border border-[#CDE6DC] bg-[#F1F9F5]", icon: "#1F5E4A", iconBg: "#DCEEE5", value: "#1F5E4A", label: "#4B5563" },
-  decision: { card: "bg-[#123A2E]",                          icon: "#FFFFFF", iconBg: "rgba(255,255,255,0.12)", value: "#FFFFFF", label: "#A8C3B9" },
+  default:  { card: "border border-[#E5E7EB] bg-white",     icon: "#1a4731", iconBg: "#f0fdf4",   value: "#111827", label: "#6B7280" },
+  deduct:   { card: "border border-[#dc262640] bg-[#fef2f2]", icon: "#dc2626", iconBg: "#fef2f2",   value: "#dc2626", label: "#6B7280" },
+  evidence: { card: "border border-[#15803d40] bg-[#f0fdf4]", icon: "#15803d", iconBg: "#f0fdf4",   value: "#15803d", label: "#4B5563" },
+  decision: { card: "border-2 border-[#1a4731] bg-white",     icon: "#1a4731", iconBg: "#f0fdf4",   value: "#1a4731", label: "#6B7280" },
 };
 
 function EquationCell({ cell }: { cell: Cell }) {
   const t = TONE[cell.tone];
   const Icon = cell.icon;
-  const onDark = cell.tone === "decision";
   return (
     <div className={`flex min-w-[168px] flex-1 flex-col rounded-lg p-4 ${t.card}`}>
       <span className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: t.iconBg }}>
@@ -99,9 +98,9 @@ function EquationCell({ cell }: { cell: Cell }) {
       </p>
       <p className="mt-2 text-2xl font-semibold tabular-nums" style={{ color: t.value }}>
         {cell.value}
-        <span className="text-sm font-normal" style={{ color: onDark ? "#7FA99B" : "#9CA3AF" }}> / 100</span>
+        <span className="text-sm font-normal text-[#9CA3AF]"> / 100</span>
       </p>
-      <p className="mt-1 text-[11px] leading-tight" style={{ color: onDark ? "#7FA99B" : "#9CA3AF" }}>{cell.foot}</p>
+      <p className="mt-1 text-[11px] leading-tight text-[#9CA3AF]">{cell.foot}</p>
     </div>
   );
 }

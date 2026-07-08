@@ -70,7 +70,7 @@ export default function WhatIfPanel({ profile, business }: { profile: MSMEProfil
     setVendor(profile.topVendorShare);
   };
 
-  const deltaColor = netDelta > 0 ? "#1F5E4A" : netDelta < 0 ? "#B42318" : "#6B7280";
+  const deltaColor = netDelta > 0 ? "#15803d" : netDelta < 0 ? "#dc2626" : "#6B7280";
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
@@ -144,8 +144,8 @@ export default function WhatIfPanel({ profile, business }: { profile: MSMEProfil
               <ul className="mt-2 space-y-1.5">
                 {cleared.map(p => (
                   <li key={p.name} className="flex items-baseline justify-between gap-4 text-sm">
-                    <span className="text-[#6B7280] line-through decoration-[#B42318]/40">{p.name}</span>
-                    <span className="font-medium tabular-nums text-[#1F5E4A]">+{Math.abs(p.points)}</span>
+                    <span className="text-[#6B7280] line-through decoration-[#dc2626]/40">{p.name}</span>
+                    <span className="font-medium tabular-nums text-[#15803d]">+{Math.abs(p.points)}</span>
                   </li>
                 ))}
               </ul>
@@ -153,9 +153,9 @@ export default function WhatIfPanel({ profile, business }: { profile: MSMEProfil
           )}
 
           {knockout && (
-            <div className="mt-4 rounded-md border-2 border-[#F0DAD6] bg-[#FBF1EF] p-3">
-              <p className="text-xs font-semibold text-[#7A2615]">Policy violation is a knockout</p>
-              <p className="mt-1 text-xs text-[#7A2615]/90">
+            <div className="mt-4 rounded-md border-2 border-[#dc262640] bg-[#fef2f2] p-3">
+              <p className="text-xs font-semibold text-[#dc2626]">Policy violation is a knockout</p>
+              <p className="mt-1 text-xs text-[#dc2626]/90">
                 Behaviour can&apos;t fix a policy breach. The recommendation stays Refer / Decline at any score until the
                 flag is resolved — there is no slider path to yes.
               </p>
@@ -163,6 +163,10 @@ export default function WhatIfPanel({ profile, business }: { profile: MSMEProfil
           )}
         </section>
       </aside>
+
+      <p className="text-xs italic text-[#9CA3AF] lg:hidden">
+        Note: Simulator re-runs the full engine on every change. Results are indicative and for advisory only.
+      </p>
 
       {/* the SAME Health Card, re-scored live */}
       <div className="min-w-0">

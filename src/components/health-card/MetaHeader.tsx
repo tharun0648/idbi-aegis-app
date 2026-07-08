@@ -28,8 +28,8 @@ export default function MetaHeader({ a }: { a: EnrichedAssessment }) {
         {/* identity + chrome */}
         <div className="min-w-0">
           <div className="flex items-start gap-4">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#ECF3F0]">
-              <Building2 className="h-6 w-6 text-[#1F5E4A]" strokeWidth={1.75} />
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#f0fdf4]">
+              <Building2 className="h-6 w-6 text-[#1a4731]" strokeWidth={1.75} />
             </span>
             <div className="min-w-0">
               <p className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">{business.archetype}</p>
@@ -47,7 +47,7 @@ export default function MetaHeader({ a }: { a: EnrichedAssessment }) {
 
           {/* Bureau → Aegis — the thesis */}
           <div className="mt-5 flex flex-wrap items-stretch gap-3">
-            <div className="rounded-lg border border-[#E5E7EB] bg-[#F8FAF9] px-4 py-2.5">
+            <div className="rounded-lg border border-[#E5E7EB] bg-[#f3f4f6] px-4 py-2.5">
               <p className="text-[11px] font-medium uppercase tracking-wide text-[#9CA3AF]">Credit bureau</p>
               <p className="mt-0.5 text-sm font-semibold tabular-nums text-[#111827]">
                 {business.bureauScore ?? "Thin file"}
@@ -65,13 +65,13 @@ export default function MetaHeader({ a }: { a: EnrichedAssessment }) {
         </div>
 
         {/* Decision Confidence */}
-        <div className="w-full shrink-0 rounded-xl border border-[#CDE6DC] bg-[#F1F9F5] p-5 lg:w-[300px]">
+        <div className="w-full shrink-0 rounded-xl border border-[#1a473140] bg-[#f0fdf4] p-5 lg:w-[300px]">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-[#4B5563]">Decision Confidence</p>
-              <p className="mt-1 text-2xl font-semibold text-[#1F5E4A]">{decisionConfidence.band}</p>
+              <p className="mt-1 text-2xl font-semibold text-[#1a4731]">{decisionConfidence.band}</p>
             </div>
-            <ShieldCheck className="h-7 w-7 shrink-0 text-[#1F5E4A]" strokeWidth={1.5} />
+            <ShieldCheck className="h-7 w-7 shrink-0 text-[#1a4731]" strokeWidth={1.5} />
           </div>
           <p className="mt-2 text-sm leading-relaxed text-[#4B5563]">{decisionConfidence.reason}</p>
         </div>

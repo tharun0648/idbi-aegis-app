@@ -12,7 +12,7 @@ export default function PenaltiesPanel({ penalties }: { penalties: Penalty[] }) 
   return (
     <section className="rounded-xl border border-[#E5E7EB] bg-white p-6">
       <div className="flex items-center gap-2">
-        <TrendingDown className="h-[18px] w-[18px] text-[#B42318]" strokeWidth={1.75} />
+        <TrendingDown className="h-[18px] w-[18px] text-[#dc2626]" strokeWidth={1.75} />
         <h2 className="text-sm font-semibold text-[#111827]">Soft Penalties <span className="font-normal text-[#6B7280]">(Deductions)</span></h2>
       </div>
 
@@ -27,13 +27,13 @@ export default function PenaltiesPanel({ penalties }: { penalties: Penalty[] }) 
                   <p className="text-sm font-medium text-[#111827]">{p.name}</p>
                   <p className="mt-0.5 text-xs leading-relaxed text-[#6B7280]">{p.basis}</p>
                 </div>
-                <span className="shrink-0 text-sm font-medium tabular-nums text-[#B42318]">{p.points}</span>
+                <span className="shrink-0 text-sm font-medium tabular-nums text-[#dc2626]">{p.points}</span>
               </li>
             ))}
           </ul>
           <div className="mt-2 flex items-baseline justify-between border-t border-[#E5E7EB] pt-4">
             <span className="text-sm font-medium text-[#111827]">Total Deductions</span>
-            <span className="text-sm font-semibold tabular-nums text-[#B42318]">{total} <span className="font-normal text-[#9CA3AF]">/ 100</span></span>
+            <span className="text-sm font-semibold tabular-nums text-[#dc2626]">{total} <span className="font-normal text-[#9CA3AF]">/ 100</span></span>
           </div>
         </>
       )}

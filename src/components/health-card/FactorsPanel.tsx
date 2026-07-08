@@ -15,7 +15,7 @@ export default function FactorsPanel({ factors, capabilityScore, className = "" 
   return (
     <section className={`rounded-xl border border-[#E5E7EB] bg-white p-6 ${className}`}>
       <div className="flex items-center gap-2">
-        <TrendingUp className="h-[18px] w-[18px] text-[#1F5E4A]" strokeWidth={1.75} />
+        <TrendingUp className="h-[18px] w-[18px] text-[#15803d]" strokeWidth={1.75} />
         <h2 className="text-sm font-semibold text-[#111827]">Positive Factors <span className="font-normal text-[#6B7280]">(Strengths)</span></h2>
       </div>
 

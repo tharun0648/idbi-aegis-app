@@ -38,12 +38,12 @@ const ENGINE = [
 
 export default function Landing() {
   return (
-    <main className="min-h-screen bg-[#F8FAF9] text-[#111827]">
+    <main className="min-h-screen bg-[#f3f4f6] text-[#111827]">
       <div className="mx-auto max-w-[1120px] px-8">
         {/* top brand bar */}
         <header className="flex items-center justify-between py-6">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1F5E4A]">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1a4731]">
               <Shield className="h-[18px] w-[18px] text-white" strokeWidth={1.75} />
             </span>
             <span className="text-base font-semibold tracking-tight">AEGIS</span>
@@ -53,7 +53,7 @@ export default function Landing() {
 
         {/* hero */}
         <section className="fade-in border-t border-[#E5E7EB] pt-16 pb-14">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#1F5E4A]">Explainable credit-decision layer</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#1a4731]">Explainable credit-decision layer</p>
           <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
             Credit decisions for the businesses a bureau score can&rsquo;t see.
           </h1>
@@ -64,7 +64,7 @@ export default function Landing() {
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#1F5E4A] px-5 py-3 text-sm font-semibold text-white transition-opacity duration-150 hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#1a4731] px-5 py-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-[#166534]"
             >
               View Demo <ArrowRight className="h-4 w-4" strokeWidth={2} />
             </Link>
@@ -88,8 +88,8 @@ export default function Landing() {
               const Icon = m.icon;
               return (
                 <div key={m.title} className="rounded-xl border border-[#E5E7EB] bg-white p-6">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#ECF3F0]">
-                    <Icon className="h-5 w-5 text-[#1F5E4A]" strokeWidth={1.75} />
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#f0fdf4]">
+                    <Icon className="h-5 w-5 text-[#1a4731]" strokeWidth={1.75} />
                   </span>
                   <h3 className="mt-4 text-lg font-semibold tracking-tight">{m.title}</h3>
                   <p className="mt-1 text-sm font-medium text-[#111827]">{m.lead}</p>
@@ -112,7 +112,7 @@ export default function Landing() {
               return (
                 <div key={e.title} className="flex gap-4">
                   <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#E5E7EB] bg-white">
-                    <Icon className="h-[18px] w-[18px] text-[#1F5E4A]" strokeWidth={1.75} />
+                    <Icon className="h-[18px] w-[18px] text-[#1a4731]" strokeWidth={1.75} />
                   </span>
                   <div>
                     <h3 className="text-[15px] font-semibold tracking-tight">{e.title}</h3>
@@ -133,7 +133,7 @@ export default function Landing() {
             </div>
             <Link
               href="/dashboard"
-              className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-[#1F5E4A] px-5 py-3 text-sm font-semibold text-white transition-opacity duration-150 hover:opacity-90"
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-[#1a4731] px-5 py-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-[#166534]"
             >
               View Demo <ArrowRight className="h-4 w-4" strokeWidth={2} />
             </Link>

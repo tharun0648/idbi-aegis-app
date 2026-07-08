@@ -19,7 +19,7 @@ export default function Dashboard() {
         </div>
         <Link
           href="/assess"
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-[#1F5E4A] px-4 py-2 text-sm font-medium text-[#1F5E4A] transition-opacity duration-150 hover:opacity-80"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-[#1a4731] px-4 py-2 text-sm font-medium text-[#1a4731] transition-opacity duration-150 hover:opacity-80"
         >
           Assess any profile <ArrowRight className="h-4 w-4" strokeWidth={2} />
         </Link>
@@ -39,7 +39,7 @@ export default function Dashboard() {
             <li key={meta.id}>
               <Link
                 href={`/business/${meta.id}`}
-                className="flex flex-col gap-4 rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-sm transition-colors duration-150 hover:border-[#1F5E4A] sm:flex-row sm:items-start sm:justify-between"
+                className="flex flex-col gap-4 rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-sm transition-colors duration-150 hover:border-[#1a4731] sm:flex-row sm:items-start sm:justify-between"
               >
                 <div className="flex min-w-0 items-start gap-3.5">
                   {/* status icon coloured by the AEGIS verdict, never the bureau verdict */}
@@ -67,7 +67,7 @@ export default function Dashboard() {
                     {insight && <p className="mt-1.5 max-w-lg text-xs leading-relaxed text-[#9CA3AF]">{insight.note}</p>}
                   </div>
                 </div>
-                <span className="inline-flex shrink-0 items-center gap-1.5 self-start text-sm font-medium text-[#1F5E4A] sm:mt-1">
+                <span className="inline-flex shrink-0 items-center gap-1.5 self-start text-sm font-medium text-[#1a4731] sm:mt-1">
                   Evaluate <ArrowRight className="h-4 w-4" strokeWidth={2} />
                 </span>
               </Link>

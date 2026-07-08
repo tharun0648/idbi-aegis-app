@@ -238,8 +238,8 @@ export default function ProfileForm() {
   }
 
   const inputBase =
-    "mt-1 w-full rounded-md border bg-white px-3 py-2 text-sm text-[#111827] outline-none focus:border-[#1F5E4A] focus:ring-2 focus:ring-[#1F5E4A]/15";
-  const errBorder = (key: string) => (errors[key] ? "border-[#B42318] focus:border-[#B42318] focus:ring-[#B42318]/15" : "border-[#E5E7EB]");
+    "mt-1 w-full rounded-md border bg-white px-3 py-2 text-sm text-[#111827] outline-none focus:border-[#1a4731] focus:ring-2 focus:ring-[#1a4731]/15";
+  const errBorder = (key: string) => (errors[key] ? "border-[#dc2626] focus:border-[#dc2626] focus:ring-[#dc2626]/15" : "border-[#E5E7EB]");
 
   const businessInfoFields = NUMBER_FIELDS.filter((f) => BUSINESS_INFO_NUMBER_KEYS.includes(f.key));
   const financialFields = NUMBER_FIELDS.filter((f) => FINANCIAL_NUMBER_KEYS.includes(f.key));
@@ -258,7 +258,7 @@ export default function ProfileForm() {
                 key={b.id}
                 type="button"
                 onClick={() => loadExample(b.profile)}
-                className="inline-flex items-center gap-1.5 rounded-md border border-[#E5E7EB] bg-white px-3 py-1.5 text-sm text-[#374151] transition-colors duration-150 hover:border-[#1F5E4A] hover:text-[#111827]"
+                className="inline-flex items-center gap-1.5 rounded-md border border-[#E5E7EB] bg-white px-3 py-1.5 text-sm text-[#374151] transition-colors duration-150 hover:border-[#1a4731] hover:text-[#111827]"
               >
                 <Building2 className="h-4 w-4 text-[#6B7280]" strokeWidth={1.75} />
                 {b.businessName}
@@ -284,7 +284,7 @@ export default function ProfileForm() {
                   <option key={o} value={o}>{cap(o)}</option>
                 ))}
               </select>
-              {errors.cashflowTrend && <p className="mt-1 text-xs text-[#B42318]">{errors.cashflowTrend}</p>}
+              {errors.cashflowTrend && <p className="mt-1 text-xs text-[#dc2626]">{errors.cashflowTrend}</p>}
             </div>
             <div>
               <FieldLabel htmlFor="seasonality" text="Seasonality" unit="enum" fieldKey="seasonality" />
@@ -298,7 +298,7 @@ export default function ProfileForm() {
                   <option key={o} value={o}>{cap(o)}</option>
                 ))}
               </select>
-              {errors.seasonality && <p className="mt-1 text-xs text-[#B42318]">{errors.seasonality}</p>}
+              {errors.seasonality && <p className="mt-1 text-xs text-[#dc2626]">{errors.seasonality}</p>}
             </div>
             {businessInfoFields.map((fld) => (
               <div key={fld.key}>
@@ -314,7 +314,7 @@ export default function ProfileForm() {
                   aria-invalid={errors[fld.key] ? true : undefined}
                   className={`${inputBase} ${errBorder(fld.key)}`}
                 />
-                {errors[fld.key] && <p className="mt-1 text-xs text-[#B42318]">{errors[fld.key]}</p>}
+                {errors[fld.key] && <p className="mt-1 text-xs text-[#dc2626]">{errors[fld.key]}</p>}
               </div>
             ))}
           </div>
@@ -338,7 +338,7 @@ export default function ProfileForm() {
                   aria-invalid={errors[fld.key] ? true : undefined}
                   className={`${inputBase} ${errBorder(fld.key)}`}
                 />
-                {errors[fld.key] && <p className="mt-1 text-xs text-[#B42318]">{errors[fld.key]}</p>}
+                {errors[fld.key] && <p className="mt-1 text-xs text-[#dc2626]">{errors[fld.key]}</p>}
               </div>
             ))}
           </div>
@@ -347,7 +347,7 @@ export default function ProfileForm() {
               type="checkbox"
               checked={form.gstLastCycleLate}
               onChange={(e) => set("gstLastCycleLate", e.target.checked)}
-              className="mt-0.5 h-4 w-4 accent-[#1F5E4A]"
+              className="mt-0.5 h-4 w-4 accent-[#1a4731]"
             />
             <span>
               <span className="flex items-center gap-1.5 text-sm font-medium text-[#111827]">
@@ -372,7 +372,7 @@ export default function ProfileForm() {
                   type="checkbox"
                   checked={form[fld.key]}
                   onChange={(e) => set(fld.key, e.target.checked)}
-                  className="mt-0.5 h-4 w-4 accent-[#1F5E4A]"
+                  className="mt-0.5 h-4 w-4 accent-[#1a4731]"
                 />
                 <span>
                   <span className="flex items-center gap-1.5 text-sm font-medium text-[#111827]">
@@ -387,7 +387,7 @@ export default function ProfileForm() {
         </section>
 
         {/* Operational evidence (optional) */}
-        <section className="rounded-xl border border-[#CDE6DC] bg-[#F1F9F5] p-6 shadow-sm">
+        <section className="rounded-xl border border-[#1a473140] bg-[#f0fdf4] p-6 shadow-sm">
           <SectionHeader title="Operational evidence" hint="Optional. Independently verifiable signals — each can only raise a borderline score, capped at +10. Leave as “Not available” if unverified." />
           <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
             {ALT_FIELDS.map((fld) => {
@@ -409,7 +409,7 @@ export default function ProfileForm() {
                     ))}
                   </select>
                   <p className="mt-1 text-xs text-[#9CA3AF]">{fld.hint}</p>
-                  {err && <p className="mt-1 text-xs text-[#B42318]">{err}</p>}
+                  {err && <p className="mt-1 text-xs text-[#dc2626]">{err}</p>}
                 </div>
               );
             })}
@@ -417,19 +417,19 @@ export default function ProfileForm() {
         </section>
 
         {formError && (
-          <p className="rounded-md border border-[#F0DAD6] bg-[#FBF1EF] px-4 py-3 text-sm text-[#7A2615]">{formError}</p>
+          <p className="rounded-md border border-[#dc262640] bg-[#fef2f2] px-4 py-3 text-sm text-[#dc2626]">{formError}</p>
         )}
 
         <div className="flex items-center gap-4">
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center rounded-lg bg-[#1F5E4A] px-5 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-[#123A2E] disabled:cursor-default disabled:opacity-60"
+            className="inline-flex items-center rounded-lg bg-[#1a4731] px-5 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-[#166534] disabled:cursor-default disabled:opacity-60"
           >
             {submitting ? "Assessing…" : "Assess with Aegis"}
           </button>
           {Object.keys(errors).length > 0 && (
-            <span className="text-sm text-[#B42318]">Fix the highlighted fields to continue.</span>
+            <span className="text-sm text-[#dc2626]">Fix the highlighted fields to continue.</span>
           )}
         </div>
       </form>
@@ -437,7 +437,7 @@ export default function ProfileForm() {
       {result && (
         <section>
           <div className="mb-4 border-t border-[#E5E7EB] pt-6">
-            <p className="text-xs font-medium uppercase tracking-wide text-[#1F5E4A]">Live engine result</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-[#1a4731]">Live engine result</p>
           </div>
           <HealthCard a={result} />
         </section>

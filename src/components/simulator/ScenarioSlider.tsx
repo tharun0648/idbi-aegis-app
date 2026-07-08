@@ -37,7 +37,7 @@ export default function ScenarioSlider({
         value={value}
         onChange={e => onChange(Number(e.target.value))}
         aria-label={label}
-        className="mt-2.5 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[#F1F3F2] accent-[#1F5E4A]"
+        className="mt-2.5 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[#F1F3F2] accent-[#1a4731]"
       />
       <div className="mt-1.5 flex justify-between text-xs tabular-nums text-[#9CA3AF]">
         <span>{format(min)}</span>

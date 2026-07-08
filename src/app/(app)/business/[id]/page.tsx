@@ -31,7 +31,7 @@ export default function BusinessPage({ params }: { params: Promise<{ id: string 
         {status === "ready" && a && (
           <Link
             href={`/simulator/${id}`}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E7EB] bg-white px-3.5 py-2 text-sm font-medium text-[#1F5E4A] transition-colors duration-150 hover:border-[#1F5E4A]"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E7EB] bg-white px-3.5 py-2 text-sm font-medium text-[#1a4731] transition-colors duration-150 hover:border-[#1a4731]"
           >
             <TrendingUp className="h-4 w-4" strokeWidth={1.75} /> Run What-If Simulator
           </Link>
@@ -39,7 +39,7 @@ export default function BusinessPage({ params }: { params: Promise<{ id: string 
       </div>
 
       {status === "loading" && <p className="text-center text-sm text-[#9CA3AF]">Evaluating with Aegis…</p>}
-      {status === "error" && <p className="text-center text-sm text-[#B42318]">Couldn&apos;t load this assessment.</p>}
+      {status === "error" && <p className="text-center text-sm text-[#dc2626]">Couldn&apos;t load this assessment.</p>}
       {status === "ready" && a && <HealthCard a={a} />}
     </main>
   );

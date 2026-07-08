@@ -27,8 +27,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAF9]">
-      <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col bg-[#123A2E] text-[#A8C3B9]">
+    <div className="flex min-h-screen bg-[#f3f4f6]">
+      <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col bg-[#1a4731] text-[#A8C3B9]">
         {/* brand */}
         <div className="flex items-center gap-3 px-6 py-6">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-white/5">
@@ -74,7 +74,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <p className="text-xs text-[#6E948A]">© 2025 Aegis by IDBI Innovate</p>
 
           <div className="mt-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1F5E4A] text-xs font-semibold text-white">RM</span>
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1a4731] text-xs font-semibold text-white">RM</span>
             <div className="min-w-0 flex-1 leading-tight">
               <p className="truncate text-sm font-medium text-white">{RELATIONSHIP_MANAGER.name}</p>
               <p className="truncate text-xs text-[#8FB3A7]">{RELATIONSHIP_MANAGER.role}</p>
