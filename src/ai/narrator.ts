@@ -33,7 +33,17 @@ const cache = new Map<string, string>();
 
 type ChatMessage = { role: "system" | "user"; content: string };
 
-export async function narrate(core: CoreAssessment, business: BusinessMeta): Promise<string | null> {
+export interface NarratorTrace {
+  model: string | null;
+  prompt: string | null;
+  response: string | null;
+}
+
+export async function narrate(
+  core: CoreAssessment,
+  business: BusinessMeta,
+  trace?: NarratorTrace,
+): Promise<string | null> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return null; // feature flag: no key → deterministic render, as today
 
@@ -43,6 +53,9 @@ export async function narrate(core: CoreAssessment, business: BusinessMeta): Pro
     if (hit) return hit;
   }
 
+  const userPrompt = buildUserPrompt(core, business);
+  if (trace) trace.prompt = userPrompt;
+
   try {
     // Lazy import keeps the SDK off the no-key path and out of the client bundle.
     const { default: OpenAI } = await import("openai");
@@ -50,12 +63,17 @@ export async function narrate(core: CoreAssessment, business: BusinessMeta): Pro
 
     const messages: ChatMessage[] = [
       { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: buildUserPrompt(core, business) },
+      { role: "user", content: userPrompt },
     ];
 
-    const raw = await complete(client, PRIMARY_MODEL, messages).catch((err) =>
-      isModelUnavailable(err) ? complete(client, FALLBACK_MODEL, messages) : Promise.reject(err),
-    );
+    let modelUsed = PRIMARY_MODEL;
+    const raw = await complete(client, PRIMARY_MODEL, messages).catch((err) => {
+      if (!isModelUnavailable(err)) return Promise.reject(err);
+      modelUsed = FALLBACK_MODEL;
+      return complete(client, FALLBACK_MODEL, messages);
+    });
+
+    if (trace) { trace.model = modelUsed; trace.response = raw; }
 
     const text = sanitize(raw);
     if (!text) return null;

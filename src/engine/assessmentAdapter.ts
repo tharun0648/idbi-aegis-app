@@ -1,6 +1,6 @@
 import { assess, type CoreAssessment, type MSMEProfile } from "@/engine/aegis-core";
 import { SEEDS, type SeededBusiness } from "@/data/seeds";
-import { narrate } from "@/ai/narrator";
+import { narrate, type NarratorTrace } from "@/ai/narrator";
 
 /**
  * AssessmentService — the boundary between the pure engine and the app.
@@ -87,11 +87,11 @@ const AD_HOC_META: BusinessMeta = {
  * Same pipeline as getAssessment, minus the seed lookup — the engine is the
  * single source of truth, the UI renders the same EnrichedAssessment.
  */
-export async function assessAdHoc(profile: MSMEProfile): Promise<EnrichedAssessment> {
+export async function assessAdHoc(profile: MSMEProfile, narratorTrace?: NarratorTrace): Promise<EnrichedAssessment> {
   const core: CoreAssessment = assess(profile);
   return {
     ...core,
     business: AD_HOC_META,
-    businessNarrative: await narrate(core, AD_HOC_META),
+    businessNarrative: await narrate(core, AD_HOC_META, narratorTrace),
   };
 }
