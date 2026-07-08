@@ -32,7 +32,7 @@ interface Cell {
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
-export default function ScoreEquation({ a }: { a: CoreAssessment }) {
+export default function ScoreEquation({ a, variant = "full" }: { a: CoreAssessment; variant?: "full" | "compact" }) {
   const flagged = a.hardFlags.length > 0;
   const showEvidence = a.alternativeEvidenceScore > 0 && !flagged;
   const softTotal = a.penalties.reduce((s, p) => s + p.points, 0); // ≤ 0
@@ -52,27 +52,44 @@ export default function ScoreEquation({ a }: { a: CoreAssessment }) {
     cells.push({ key: "net", op: "=", icon: TrendingUp, label: "Net Score", sub: "For Decision", value: `${a.netScore}`, foot: "Score used for decision", tone: "decision" });
   }
 
+  // Mobile responsive rule: don't rely solely on horizontal scroll. Split into
+  // two logical rows — (Capability − Penalties = Net) and, only when present,
+  // (+ Evidence = Adjusted) — which stack on narrow viewports and sit inline
+  // on wider ones. `overflow-x-auto` stays only as a per-row safety net for
+  // very narrow phones, not as the primary mobile layout mechanism.
+  const primaryCells = cells.slice(0, 3);   // cap, pen, net — always present
+  const secondaryCells = cells.slice(3);    // evi, adj — only when showEvidence
+
+  const renderRow = (row: Cell[]) => (
+    <div className="flex items-stretch gap-2 overflow-x-auto pb-1">
+      {row.map(cell => (
+        <div key={cell.key} className="flex items-stretch gap-2">
+          {cell.op && (
+            <div className="flex w-6 shrink-0 items-center justify-center text-xl font-medium text-[#9CA3AF]" aria-hidden>
+              {cell.op}
+            </div>
+          )}
+          <EquationCell cell={cell} compact={variant === "compact"} />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <section className="rounded-xl border border-[#E5E7EB] bg-white p-6">
-      <div className="flex items-stretch gap-2 overflow-x-auto pb-1">
-        {cells.map(cell => (
-          <div key={cell.key} className="flex items-stretch gap-2">
-            {cell.op && (
-              <div className="flex w-6 shrink-0 items-center justify-center text-xl font-medium text-[#9CA3AF]" aria-hidden>
-                {cell.op}
-              </div>
-            )}
-            <EquationCell cell={cell} />
-          </div>
-        ))}
+    <section className={variant === "compact" ? "" : "rounded-xl border border-[#E5E7EB] bg-white p-6"}>
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        {renderRow(primaryCells)}
+        {secondaryCells.length > 0 && renderRow(secondaryCells)}
       </div>
 
-      <div className="mt-4 flex items-start gap-2 border-t border-[#F1F3F2] pt-4">
-        <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#9CA3AF]" strokeWidth={1.75} />
-        <p className="text-xs leading-relaxed text-[#6B7280]">
-          Core score is frozen. Operational evidence provides a bounded uplift (max +10). Hard policy flags override all scores.
-        </p>
-      </div>
+      {variant === "full" && (
+        <div className="mt-4 flex items-start gap-2 border-t border-[#F1F3F2] pt-4">
+          <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#9CA3AF]" strokeWidth={1.75} />
+          <p className="text-xs leading-relaxed text-[#6B7280]">
+            Core score is frozen. Operational evidence provides a bounded uplift (max +10). Hard policy flags override all scores.
+          </p>
+        </div>
+      )}
     </section>
   );
 }
@@ -84,23 +101,23 @@ const TONE: Record<Tone, { card: string; icon: string; iconBg: string; value: st
   decision: { card: "border-2 border-[#1a4731] bg-white",     icon: "#1a4731", iconBg: "#f0fdf4",   value: "#1a4731", label: "#6B7280" },
 };
 
-function EquationCell({ cell }: { cell: Cell }) {
+function EquationCell({ cell, compact = false }: { cell: Cell; compact?: boolean }) {
   const t = TONE[cell.tone];
   const Icon = cell.icon;
   return (
-    <div className={`flex min-w-[168px] flex-1 flex-col rounded-lg p-4 ${t.card}`}>
-      <span className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: t.iconBg }}>
-        <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} style={{ color: t.icon }} />
+    <div className={`flex ${compact ? "min-w-[100px] p-2.5" : "min-w-[168px] p-4"} flex-1 flex-col rounded-lg ${t.card}`}>
+      <span className={`flex ${compact ? "h-7 w-7" : "h-9 w-9"} items-center justify-center rounded-lg`} style={{ backgroundColor: t.iconBg }}>
+        <Icon className={compact ? "h-3.5 w-3.5" : "h-[18px] w-[18px]"} strokeWidth={1.75} style={{ color: t.icon }} />
       </span>
-      <p className="mt-3 text-xs font-medium leading-tight" style={{ color: t.label }}>
+      <p className={`mt-2 font-medium leading-tight ${compact ? "text-[11px]" : "text-xs"}`} style={{ color: t.label }}>
         {cell.label}
-        <span className="block font-normal opacity-80">({cell.sub})</span>
+        {!compact && <span className="block font-normal opacity-80">({cell.sub})</span>}
       </p>
-      <p className="mt-2 text-2xl font-semibold tabular-nums" style={{ color: t.value }}>
+      <p className={`mt-1.5 font-semibold tabular-nums ${compact ? "text-xl" : "text-2xl"}`} style={{ color: t.value }}>
         {cell.value}
-        <span className="text-sm font-normal text-[#9CA3AF]"> / 100</span>
+        {!compact && <span className="text-sm font-normal text-[#9CA3AF]"> / 100</span>}
       </p>
-      <p className="mt-1 text-[11px] leading-tight text-[#9CA3AF]">{cell.foot}</p>
+      {!compact && <p className="mt-1 text-[11px] leading-tight text-[#9CA3AF]">{cell.foot}</p>}
     </div>
   );
 }

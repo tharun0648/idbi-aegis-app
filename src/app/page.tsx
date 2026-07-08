@@ -1,6 +1,10 @@
 import Link from "next/link";
-import { Shield, LifeBuoy, ShieldAlert, TrendingUp, ArrowRight, Lock, Ban, Plus, MessageSquareText } from "lucide-react";
-import { MODEL_VERSION } from "@/data/presentation";
+import { Shield, LifeBuoy, ShieldAlert, TrendingUp, ArrowRight, Lock, Ban, Plus, MessageSquareText, Play } from "lucide-react";
+import { MODEL_VERSION, BUSINESS_PRESENTATION } from "@/data/presentation";
+import { assess } from "@/engine/aegis-core";
+import { SEEDS } from "@/data/seeds";
+import { VERDICT_VISUAL } from "@/presentation/verdict";
+import ScoreEquation from "@/components/health-card/ScoreEquation";
 
 /**
  * LANDING — the public entry at "/", shell-free. Written for a cold evaluator
@@ -37,6 +41,10 @@ const ENGINE = [
 ];
 
 export default function Landing() {
+  const heroAssessment = assess(SEEDS.champion.profile);
+  const heroPres = BUSINESS_PRESENTATION.champion;
+  const heroVerdict = VERDICT_VISUAL[heroAssessment.recommendation];
+
   return (
     <main className="min-h-screen bg-[#f3f4f6] text-[#111827]">
       <div className="mx-auto max-w-[1120px] px-8">
@@ -52,25 +60,81 @@ export default function Landing() {
         </header>
 
         {/* hero */}
-        <section className="fade-in border-t border-[#E5E7EB] pt-16 pb-14">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#1a4731]">Explainable credit-decision layer</p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
-            Credit decisions for the businesses a bureau score can&rsquo;t see.
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-[#374151]">
-            Aegis reads financial and alternative-data signals, produces a Financial Health Card with the evidence behind
-            it, and advises the underwriter. It never auto-approves a loan.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#1a4731] px-5 py-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-[#166534]"
-            >
-              View Demo <ArrowRight className="h-4 w-4" strokeWidth={2} />
-            </Link>
-            <span className="inline-flex items-center gap-1.5 text-sm text-[#6B7280]">
-              <Lock className="h-3.5 w-3.5" strokeWidth={1.75} /> Deterministic — no AI in scoring
-            </span>
+        <section className="fade-in grid gap-10 border-t border-[#E5E7EB] pt-16 pb-14 lg:grid-cols-2 lg:items-center">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#1a4731]">Explainable credit-decision layer</p>
+            <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
+              Credit decisions for the businesses a bureau score can&rsquo;t see.
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-[#374151]">
+              Aegis reads financial and alternative-data signals, produces a Financial Health Card with the evidence behind
+              it, and advises the underwriter. It never auto-approves a loan.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 rounded-lg bg-[#1a4731] px-5 py-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-[#166534]"
+              >
+                View Demo <ArrowRight className="h-4 w-4" strokeWidth={2} />
+              </Link>
+              <a
+                href="#how-it-works"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#E5E7EB] px-5 py-3 text-sm font-semibold text-[#374151] transition-colors duration-150 hover:border-[#1a4731]"
+              >
+                <Play className="h-3.5 w-3.5" strokeWidth={2} fill="currentColor" /> How it works
+              </a>
+              <span className="inline-flex items-center gap-1.5 text-sm text-[#6B7280]">
+                <Lock className="h-3.5 w-3.5" strokeWidth={1.75} /> Deterministic — no AI in scoring
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-md">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#1a4731]">{SEEDS.champion.archetype}</p>
+            <div className="mt-2 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold text-[#111827]">{SEEDS.champion.businessName}</h2>
+                <p className="text-sm text-[#6B7280]">{heroPres.industry} · {heroPres.location} · Established {heroPres.establishedYear}</p>
+              </div>
+              <div className="shrink-0 text-right">
+                <span
+                  className="inline-block rounded-full px-3 py-1 text-xs font-semibold text-white"
+                  style={{ backgroundColor: heroVerdict.color }}
+                >
+                  {heroAssessment.recommendation === "APPROVE" ? "APPROVED" : heroVerdict.label.toUpperCase()}
+                </span>
+                <p className="mt-1 text-xs text-[#6B7280]">{heroAssessment.decisionConfidence.band} Confidence</p>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <ScoreEquation a={heroAssessment} variant="compact" />
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-semibold text-[#15803d]">Key Strengths</p>
+                <ul className="mt-1.5 space-y-1">
+                  {heroAssessment.decisionTrace.primaryDrivers.slice(0, 3).map(d => (
+                    <li key={d} className="flex items-center gap-1.5 text-xs text-[#374151]">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#15803d]" aria-hidden />
+                      {d}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[#ea580c]">Key Risks</p>
+                <ul className="mt-1.5 space-y-1">
+                  {heroAssessment.decisionTrace.riskDrivers.slice(0, 2).map(d => (
+                    <li key={d} className="flex items-center gap-1.5 text-xs text-[#374151]">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#ea580c]" aria-hidden />
+                      {d}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -101,7 +165,7 @@ export default function Landing() {
         </section>
 
         {/* how the engine works */}
-        <section className="border-t border-[#E5E7EB] py-14">
+        <section id="how-it-works" className="border-t border-[#E5E7EB] py-14">
           <div className="max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6B7280]">How it works</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight">A decision you can audit line by line.</h2>
