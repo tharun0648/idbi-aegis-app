@@ -549,12 +549,9 @@ export async function POST(req: Request) {
 
 - [ ] **Step 11: Write the engine-freeze regression test**
 
-Add to `src/engine/assessmentAdapter.test.ts` (created in Step 5) a second test that proves the `_debug`/narrator-trace plumbing never alters deterministic engine output — the whole point of the freeze boundary:
+Add to `src/engine/assessmentAdapter.test.ts` (created in Step 5) a second test that proves the `_debug`/narrator-trace plumbing never alters deterministic engine output — the whole point of the freeze boundary. Add `import { assess } from "@/engine/aegis-core";` to the file's existing top-of-file import block (alongside the three imports from Step 5), then add this test inside the same `describe` block as the trace-threading test:
 
 ```ts
-import { assess } from "@/engine/aegis-core";
-
-// ...inside the same describe block as the trace-threading test:
 it("engine-freeze regression: assessAdHoc's engine fields exactly match a direct assess() call", async () => {
   const trace: NarratorTrace = { model: null, prompt: null, response: null };
   const viaAdapter = await assessAdHoc(EXAMPLE_DEFAULT_PROFILE, trace);
