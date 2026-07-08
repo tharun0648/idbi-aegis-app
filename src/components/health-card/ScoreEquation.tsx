@@ -109,11 +109,11 @@ function EquationCell({ cell, compact = false }: { cell: Cell; compact?: boolean
       <span className={`flex ${compact ? "h-7 w-7" : "h-9 w-9"} items-center justify-center rounded-lg`} style={{ backgroundColor: t.iconBg }}>
         <Icon className={compact ? "h-3.5 w-3.5" : "h-[18px] w-[18px]"} strokeWidth={1.75} style={{ color: t.icon }} />
       </span>
-      <p className={`mt-2 font-medium leading-tight ${compact ? "text-[11px]" : "text-xs"}`} style={{ color: t.label }}>
+      <p className={`${compact ? "mt-2 text-[11px]" : "mt-3 text-xs"} font-medium leading-tight`} style={{ color: t.label }}>
         {cell.label}
         {!compact && <span className="block font-normal opacity-80">({cell.sub})</span>}
       </p>
-      <p className={`mt-1.5 font-semibold tabular-nums ${compact ? "text-xl" : "text-2xl"}`} style={{ color: t.value }}>
+      <p className={`${compact ? "mt-1.5 text-xl" : "mt-2 text-2xl"} font-semibold tabular-nums`} style={{ color: t.value }}>
         {cell.value}
         {!compact && <span className="text-sm font-normal text-[#9CA3AF]"> / 100</span>}
       </p>

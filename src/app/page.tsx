@@ -4,6 +4,7 @@ import { MODEL_VERSION, BUSINESS_PRESENTATION } from "@/data/presentation";
 import { assess } from "@/engine/aegis-core";
 import { SEEDS } from "@/data/seeds";
 import { VERDICT_VISUAL } from "@/presentation/verdict";
+import { recommendationView } from "@/view-models/healthCard";
 import ScoreEquation from "@/components/health-card/ScoreEquation";
 
 /**
@@ -44,6 +45,7 @@ export default function Landing() {
   const heroAssessment = assess(SEEDS.champion.profile);
   const heroPres = BUSINESS_PRESENTATION.champion;
   const heroVerdict = VERDICT_VISUAL[heroAssessment.recommendation];
+  const heroView = recommendationView(heroAssessment.recommendation);
 
   return (
     <main className="min-h-screen bg-[#f3f4f6] text-[#111827]">
@@ -101,7 +103,7 @@ export default function Landing() {
                   className="inline-block rounded-full px-3 py-1 text-xs font-semibold text-white"
                   style={{ backgroundColor: heroVerdict.color }}
                 >
-                  {heroAssessment.recommendation === "APPROVE" ? "APPROVED" : heroVerdict.label.toUpperCase()}
+                  {heroView.title.toUpperCase()}
                 </span>
                 <p className="mt-1 text-xs text-[#6B7280]">{heroAssessment.decisionConfidence.band} Confidence</p>
               </div>
