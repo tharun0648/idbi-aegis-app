@@ -40,7 +40,7 @@ export default function TransparencyPanel({ debug }: { debug: AssessDebug }) {
         <div className="divide-y divide-[#F1F3F2] border-t border-[#E5E7EB]">
           <div className="p-6">
             <p className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">Raw Input Profile</p>
-            <p className="mt-1 text-xs text-[#9CA3AF]">These are the 13 signals submitted to the Aegis engine.</p>
+            <p className="mt-1 text-xs text-[#9CA3AF]">These are the 13 required signals plus 4 optional operational-evidence signals submitted to the Aegis engine.</p>
             <table className="mt-3 w-full border-collapse text-xs font-mono">
               <tbody>
                 {PROFILE_FIELD_ORDER.map((key, i) => (
