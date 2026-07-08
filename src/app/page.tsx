@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Shield, LifeBuoy, ShieldAlert, TrendingUp, ArrowRight, Lock, Ban, Plus, MessageSquareText, Play } from "lucide-react";
+import { Shield, LifeBuoy, ShieldAlert, TrendingUp, ArrowRight, Lock, Ban, Plus, MessageSquareText, Play, Landmark, Receipt, Droplets, FileSpreadsheet, Users, CreditCard, Building2, Smartphone } from "lucide-react";
 import { MODEL_VERSION, BUSINESS_PRESENTATION } from "@/data/presentation";
 import { assess } from "@/engine/aegis-core";
 import { SEEDS } from "@/data/seeds";
@@ -40,6 +40,17 @@ const ENGINE = [
   { icon: Plus, title: "Bounded evidence uplift", body: "Verified operational signals can lift a borderline score by at most +10 — never enough to rescue a knockout." },
   { icon: MessageSquareText, title: "The LLM explains, never decides", body: "Language models phrase an already-final decision into plain English. They cannot compute a number or change an outcome." },
 ];
+
+const DATA_ECOSYSTEM = [
+  { icon: Landmark, source: "Account Aggregator", purpose: "Consented financial information", signals: ["Cash-flow trends", "Banking behaviour", "Balance consistency", "Financial stability"], tag: "Consent-based" },
+  { icon: Receipt, source: "GSTN", purpose: "Business tax filing behaviour", signals: ["GST filing consistency", "Filing gaps", "Payment regularity", "Compliance history"], tag: "Government verified" },
+  { icon: Droplets, source: "BBPS", purpose: "Utility payment behaviour", signals: ["Electricity payments", "Utility consistency", "Payment discipline"], tag: "Verified payment records" },
+  { icon: FileSpreadsheet, source: "TReDS", purpose: "Invoice financing participation", signals: ["Invoice discounting", "Working capital usage", "Receivable behaviour"], tag: "Trade ecosystem" },
+  { icon: Users, source: "EPFO / ESIC", purpose: "Employment and workforce stability", signals: ["Workforce continuity", "Contribution consistency", "Operational stability"], tag: "Operational evidence" },
+  { icon: CreditCard, source: "Credit Bureau", purpose: "Traditional credit history", signals: ["Bureau score", "Existing defaults", "Delinquencies", "Credit history"], tag: "Traditional credit signal" },
+  { icon: Building2, source: "MCA / UDYAM", purpose: "Business identity verification", signals: ["Entity existence", "Registration status", "Business age"], tag: "Identity verification" },
+  { icon: Smartphone, source: "Digital Payments", purpose: "Business digital adoption", signals: ["Digital receipts", "Payment behaviour", "Transaction consistency"], tag: "Operational behaviour" },
+] as const;
 
 export default function Landing() {
   const heroAssessment = assess(SEEDS.champion.profile);
@@ -184,6 +195,41 @@ export default function Landing() {
                     <h3 className="text-[15px] font-semibold tracking-tight">{e.title}</h3>
                     <p className="mt-1 text-sm leading-relaxed text-[#6B7280]">{e.body}</p>
                   </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* the data ecosystem */}
+        <section className="border-t border-[#E5E7EB] py-14">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6B7280]">The data ecosystem</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">Built on India&rsquo;s digital financial infrastructure.</h2>
+            <p className="mt-2 text-[15px] leading-relaxed text-[#6B7280]">
+              Aegis doesn&rsquo;t replace existing lending systems. It brings together verified financial, operational, and
+              ecosystem signals already available across India&rsquo;s digital infrastructure into one explainable Financial
+              Health Card.
+            </p>
+          </div>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {DATA_ECOSYSTEM.map(d => {
+              const Icon = d.icon;
+              return (
+                <div key={d.source} className="flex flex-col rounded-xl border border-[#E5E7EB] bg-white p-5">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f0fdf4]">
+                    <Icon className="h-[18px] w-[18px] text-[#1a4731]" strokeWidth={1.75} />
+                  </span>
+                  <h3 className="mt-3 text-sm font-semibold text-[#111827]">{d.source}</h3>
+                  <p className="mt-1 text-xs text-[#6B7280]">{d.purpose}</p>
+                  <ul className="mt-3 space-y-1">
+                    {d.signals.map(s => (
+                      <li key={s} className="text-xs leading-relaxed text-[#6B7280]">· {s}</li>
+                    ))}
+                  </ul>
+                  <span className="mt-4 inline-block w-fit rounded-full bg-[#F3F4F6] px-2.5 py-1 text-[11px] font-medium text-[#6B7280]">
+                    {d.tag}
+                  </span>
                 </div>
               );
             })}
