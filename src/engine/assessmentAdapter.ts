@@ -58,12 +58,18 @@ export interface BusinessSummary {
   meta: BusinessMeta;
   recommendation: CoreAssessment["recommendation"];
   adjustedNetScore: number;
+  decisionConfidence: CoreAssessment["decisionConfidence"];
 }
 
 export function listBusinessSummaries(): BusinessSummary[] {
   return Object.values(SEEDS).map(b => {
     const core = assess(b.profile);
-    return { meta: toMeta(b), recommendation: core.recommendation, adjustedNetScore: core.adjustedNetScore };
+    return {
+      meta: toMeta(b),
+      recommendation: core.recommendation,
+      adjustedNetScore: core.adjustedNetScore,
+      decisionConfidence: core.decisionConfidence,
+    };
   });
 }
 

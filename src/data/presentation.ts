@@ -27,6 +27,30 @@ export const BUSINESS_PRESENTATION: Record<string, BusinessPresentation> = {
   evidence: { industry: "Handloom & Textiles", location: "Kanchipuram, Tamil Nadu", establishedYear: 2022, annualTurnover: "₹3.2 Cr", gstin: "33AAKCK0123N1Z9" },
 };
 
+/**
+ * DEMO INSIGHT — what each seeded business demonstrates about Aegis vs. a bureau
+ * score, in one of three plain-language patterns. Static editorial copy, chosen
+ * by hand per archetype; not derived from the engine and never scored:
+ *   Rescue — bureau rejects/thin-file, Aegis approves on operational strength.
+ *   Catch  — bureau reads clean/approvable, Aegis's deeper check finds (or rules
+ *            out) something the bureau score can't see — including hard-flag
+ *            knockouts, which sit in this bucket.
+ *   Coach  — Aegis shows the specific path or terms to get from "not yet" to "yes".
+ */
+export type DemoLabel = "Rescue" | "Catch" | "Coach";
+export interface DemoInsight { label: DemoLabel; note: string; }
+
+export const DEMO_INSIGHT: Record<string, DemoInsight> = {
+  champion: { label: "Rescue", note: "Thin file, bureau rejects; Aegis approves on operational strength." },
+  mirage:   { label: "Catch",  note: "Bureau-approvable (720); Aegis catches a GST policy breach." },
+  climber:  { label: "Coach",  note: "Below the line today; a simulated path to yes." },
+  evidence: { label: "Rescue", note: "Thin file lifted over the line by verified operational evidence." },
+  prime:    { label: "Catch",  note: "Bureau-approvable (780); Aegis's deeper check confirms zero penalties — nothing hidden." },
+  cusp:     { label: "Coach",  note: "Bureau borderline (690); Aegis defines the exact terms for an approval." },
+  default:  { label: "Catch",  note: "Strong surface metrics; a live default is an absolute knockout no score buys past." },
+  kyc:      { label: "Catch",  note: "Bureau-approvable (710); Aegis catches a KYC identity mismatch score alone would miss." },
+};
+
 // App chrome — not per-business. Descriptive, never scored.
 export const MODEL_VERSION = "Aegis core v1.2";
 export const ENGINE_DESCRIPTOR = "Deterministic — No AI in scoring";

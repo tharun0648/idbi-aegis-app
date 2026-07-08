@@ -26,8 +26,8 @@ export default function ScenarioSlider({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-4">
-        <label className="text-sm font-medium text-[#1C1917]">{label}</label>
-        <span className="text-sm font-semibold tabular-nums text-[#1C1917]">{format(value)}</span>
+        <label className="text-sm font-medium text-[#111827]">{label}</label>
+        <span className="text-sm font-semibold tabular-nums text-[#111827]">{format(value)}</span>
       </div>
       <input
         type="range"
@@ -37,11 +37,11 @@ export default function ScenarioSlider({
         value={value}
         onChange={e => onChange(Number(e.target.value))}
         aria-label={label}
-        className="mt-2.5 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[#F0EFED] accent-[#1D6F42]"
+        className="mt-2.5 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[#F1F3F2] accent-[#1F5E4A]"
       />
-      <div className="mt-1.5 flex justify-between text-xs tabular-nums text-[#A8A29E]">
+      <div className="mt-1.5 flex justify-between text-xs tabular-nums text-[#9CA3AF]">
         <span>{format(min)}</span>
-        <span className="text-[#78716C]">{hint}</span>
+        <span className="text-[#6B7280]">{hint}</span>
         <span>{format(max)}</span>
       </div>
     </div>

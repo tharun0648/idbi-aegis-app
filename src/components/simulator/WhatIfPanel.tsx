@@ -5,6 +5,7 @@ import { assess, simulate, type Lever, type MSMEProfile } from "@/engine/aegis-c
 import { CLIMBER_LEVERS } from "@/data/seeds";
 import type { BusinessMeta, EnrichedAssessment } from "@/engine/assessmentAdapter";
 import { recommendationView } from "@/view-models/healthCard";
+import { VERDICT_VISUAL } from "@/presentation/verdict";
 import HealthCard from "@/components/health-card/HealthCard";
 import ScenarioSlider from "./ScenarioSlider";
 
@@ -16,6 +17,9 @@ import ScenarioSlider from "./ScenarioSlider";
  *
  * Slider bounds run from the borrower's current value to the Climber lever
  * target (from CLIMBER_LEVERS) — so the ranges are engine-defined, not guessed.
+ *
+ * Colours: title/subtitle text come from the frozen recommendationView();
+ * colour/tint come from the shared VERDICT_VISUAL map (same as the Health Card).
  */
 
 type ByType<T extends Lever["type"]> = Extract<Lever, { type: T }>;
@@ -52,6 +56,7 @@ export default function WhatIfPanel({ profile, business }: { profile: MSMEProfil
   const bandChanged = core.recommendation !== base.recommendation;
   const baseView = recommendationView(base.recommendation);
   const nowView = recommendationView(core.recommendation);
+  const nowVerdict = VERDICT_VISUAL[core.recommendation];
   const knockout = core.hardFlags.length > 0;
   const dirty = levers.length > 0;
 
@@ -65,25 +70,25 @@ export default function WhatIfPanel({ profile, business }: { profile: MSMEProfil
     setVendor(profile.topVendorShare);
   };
 
-  const deltaColor = netDelta > 0 ? "#1D6F42" : netDelta < 0 ? "#B23A1E" : "#78716C";
+  const deltaColor = netDelta > 0 ? "#1F5E4A" : netDelta < 0 ? "#B42318" : "#6B7280";
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
       {/* controls */}
       <aside className="space-y-6 lg:sticky lg:top-6">
-        <section className="rounded-lg border border-[#E7E5E4] bg-white p-6">
+        <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
           <div className="flex items-baseline justify-between gap-4">
-            <h2 className="text-sm font-semibold text-[#1C1917]">Adjust the levers</h2>
+            <h2 className="text-sm font-semibold text-[#111827]">Adjust the levers</h2>
             <button
               type="button"
               onClick={reset}
               disabled={!dirty}
-              className="text-xs font-medium text-[#57534E] underline-offset-2 hover:underline disabled:cursor-default disabled:text-[#D6D3D1] disabled:no-underline"
+              className="text-xs font-medium text-[#6B7280] underline-offset-2 hover:underline disabled:cursor-default disabled:text-[#D1D5DB] disabled:no-underline"
             >
               Reset
             </button>
           </div>
-          <p className="mt-0.5 text-xs text-[#78716C]">Model a behaviour change; Aegis re-scores live.</p>
+          <p className="mt-0.5 text-xs text-[#6B7280]">Adjust operational levers; the engine re-scores live.</p>
           <div className="mt-5 space-y-6">
             <ScenarioSlider label="Receivable days" value={days} min={daysMin} max={daysMax} step={1}
               format={v => `${v} days`} hint="Lower is better" onChange={setDays} />
@@ -95,15 +100,15 @@ export default function WhatIfPanel({ profile, business }: { profile: MSMEProfil
         </section>
 
         {/* what changed */}
-        <section className="rounded-lg border border-[#E7E5E4] bg-white p-6">
-          <h2 className="text-sm font-semibold text-[#1C1917]">What changes</h2>
+        <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+          <h2 className="text-sm font-semibold text-[#111827]">What changes</h2>
 
           <div className="mt-4 flex items-baseline justify-between gap-4">
-            <span className="text-sm text-[#57534E]">Net score</span>
+            <span className="text-sm text-[#6B7280]">Net score</span>
             <span className="flex items-baseline gap-2 tabular-nums">
-              <span className="text-[#A8A29E]">{base.netScore}</span>
-              <span className="text-[#D6D3D1]">→</span>
-              <span className="text-lg font-semibold" style={{ color: nowView.colors.accent }}>{core.netScore}</span>
+              <span className="text-[#9CA3AF]">{base.netScore}</span>
+              <span className="text-[#D1D5DB]">→</span>
+              <span className="text-lg font-semibold" style={{ color: nowVerdict.color }}>{core.netScore}</span>
               {netDelta !== 0 && (
                 <span className="text-xs font-semibold" style={{ color: deltaColor }}>
                   {netDelta > 0 ? `+${netDelta}` : netDelta}
@@ -115,19 +120,19 @@ export default function WhatIfPanel({ profile, business }: { profile: MSMEProfil
           <div
             className="mt-3 rounded-md border p-3"
             style={{
-              borderColor: bandChanged ? nowView.colors.border : "#E7E5E4",
-              background: bandChanged ? nowView.colors.tint : "transparent",
+              borderColor: bandChanged ? nowVerdict.color : "#E5E7EB",
+              background: bandChanged ? nowVerdict.tint : "transparent",
             }}
           >
-            <p className="text-xs font-medium uppercase tracking-wide text-[#78716C]">Recommendation</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">Recommendation</p>
             <p className="mt-1 flex flex-wrap items-baseline gap-2 text-sm">
-              <span className={bandChanged ? "text-[#A8A29E] line-through" : "font-semibold text-[#1C1917]"}>
+              <span className={bandChanged ? "text-[#9CA3AF] line-through" : "font-semibold text-[#111827]"}>
                 {baseView.title}
               </span>
               {bandChanged && (
                 <>
-                  <span className="text-[#D6D3D1]">→</span>
-                  <span className="font-semibold" style={{ color: nowView.colors.ink }}>{nowView.title}</span>
+                  <span className="text-[#D1D5DB]">→</span>
+                  <span className="font-semibold" style={{ color: nowVerdict.color }}>{nowView.title}</span>
                 </>
               )}
             </p>
@@ -135,12 +140,12 @@ export default function WhatIfPanel({ profile, business }: { profile: MSMEProfil
 
           {cleared.length > 0 && (
             <div className="mt-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-[#A8A29E]">Penalties cleared</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">Penalties cleared</p>
               <ul className="mt-2 space-y-1.5">
                 {cleared.map(p => (
                   <li key={p.name} className="flex items-baseline justify-between gap-4 text-sm">
-                    <span className="text-[#57534E] line-through decoration-[#B23A1E]/40">{p.name}</span>
-                    <span className="font-medium tabular-nums text-[#1D6F42]">+{Math.abs(p.points)}</span>
+                    <span className="text-[#6B7280] line-through decoration-[#B42318]/40">{p.name}</span>
+                    <span className="font-medium tabular-nums text-[#1F5E4A]">+{Math.abs(p.points)}</span>
                   </li>
                 ))}
               </ul>
@@ -148,7 +153,7 @@ export default function WhatIfPanel({ profile, business }: { profile: MSMEProfil
           )}
 
           {knockout && (
-            <div className="mt-4 rounded-md border-2 border-[#E7C4B8] bg-[#FBEAE5] p-3">
+            <div className="mt-4 rounded-md border-2 border-[#F0DAD6] bg-[#FBF1EF] p-3">
               <p className="text-xs font-semibold text-[#7A2615]">Policy violation is a knockout</p>
               <p className="mt-1 text-xs text-[#7A2615]/90">
                 Behaviour can&apos;t fix a policy breach. The recommendation stays Refer / Decline at any score until the
