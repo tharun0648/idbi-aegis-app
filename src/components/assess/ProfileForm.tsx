@@ -6,7 +6,9 @@ import { validateProfile, EXAMPLE_DEFAULT_PROFILE } from "@/engine/profileSchema
 import { SEEDS, type SeededBusiness } from "@/data/seeds";
 import type { MSMEProfile } from "@/engine/aegis-core";
 import type { EnrichedAssessment } from "@/engine/assessmentAdapter";
+import type { AssessDebug } from "@/types/debug";
 import HealthCard from "@/components/health-card/HealthCard";
+import TransparencyPanel from "@/components/TransparencyPanel";
 
 /**
  * The public input surface. Holds 13 form fields as the one place client
@@ -189,6 +191,7 @@ export default function ProfileForm() {
   const [form, setForm] = useState<FormState>(() => fromProfile(EXAMPLE_DEFAULT_PROFILE));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [result, setResult] = useState<EnrichedAssessment | null>(null);
+  const [debug, setDebug] = useState<AssessDebug | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -211,6 +214,7 @@ export default function ProfileForm() {
     if (!validation.ok) {
       setErrors(validation.errors);
       setResult(null);
+      setDebug(null);
       return;
     }
     setErrors({});
@@ -226,12 +230,15 @@ export default function ProfileForm() {
         setErrors(data.errors ?? {});
         setFormError(data.errors ? null : "Something went wrong assessing this profile.");
         setResult(null);
+        setDebug(null);
         return;
       }
       setResult(data.assessment as EnrichedAssessment);
+      setDebug((data._debug as AssessDebug) ?? null);
     } catch {
       setFormError("Couldn't reach the assessment service.");
       setResult(null);
+      setDebug(null);
     } finally {
       setSubmitting(false);
     }
@@ -435,11 +442,12 @@ export default function ProfileForm() {
       </form>
 
       {result && (
-        <section>
+        <section className="space-y-4">
           <div className="mb-4 border-t border-[#E5E7EB] pt-6">
             <p className="text-xs font-medium uppercase tracking-wide text-[#1a4731]">Live engine result</p>
           </div>
           <HealthCard a={result} />
+          {debug && <TransparencyPanel debug={debug} />}
         </section>
       )}
     </div>
