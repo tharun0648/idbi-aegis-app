@@ -16,8 +16,8 @@
 - No emoji anywhere in UI.
 - Real `CoreAssessment` field names (do not use the stale names from the original design brief): `penalties` (not `softPenalties`), `alternativeEvidenceScore` (not `evidenceUplift`), `hardFlags` (not `flags`), `decisionConfidence: { score, band, reason }` (not a bare `confidence` number).
 - Color-token decision (confirmed with the user): adopt the new hex palette below everywhere, replacing the current `#1F5E4A`/`#123A2E`/`#B7791F`/`#B42318` system. `src/view-models/healthCard.ts`'s `TONES` table and `src/presentation/verdict.tsx`'s `VERDICT_VISUAL` map stay the single source of truth for decision colors — edit only those two tables' values, per CLAUDE.md's freeze-boundary rule.
-- Scope decision (confirmed with the user): pages 1–4 (landing, dashboard, assessment, simulator) keep their current structure/copy. Only add the specific gaps listed in Tasks 3–8. Do not rebuild markup that already exists and already matches the design brief's intent.
-- The design brief's assess-wizard Step 1 asked for business name / annual turnover / industry / GSTIN / city fields that don't exist in `MSMEProfile`/`profileSchema.ts` and would be pure decoration with no effect on the score. Task 9 deliberately does NOT add them — the wizard's 5 steps are re-grouped from the real 13+4 fields instead (see Task 9 for the exact mapping). Flag this to the user after Task 9 in case they actually want the cosmetic fields.
+- Scope decision (confirmed with the user): pages 1–4 (landing, dashboard, assessment, simulator) keep their current structure/copy. Only add the specific gaps listed in Tasks 3–9. Do not rebuild markup that already exists and already matches the design brief's intent.
+- **Superseded decision:** an earlier version of this plan dropped business name/turnover/industry/GSTIN/city from the wizard's Step 1 because they don't exist in `MSMEProfile`/`profileSchema.ts`. The user has since confirmed these should be reinstated as **decorative-only** fields with "source hint" copy (e.g. "From MCA / UDYAM registration") — local component state, never sent in the `/api/assess` payload, never validated by Zod, never part of `PROFILE_FIELD_ORDER`. Task 10 implements this. Do not let these fields leak into `toRaw()`, `validateProfile()`, or the Transparency Panel's Raw Input Profile table — that table stays engine-fields-only, matching the 17-field `PROFILE_FIELD_ORDER` exactly.
 - Existing presentation components are extension points, not templates. When adding new UI, prefer extending existing components with optional props (e.g. `variant="compact"`, `showDebug`) rather than creating parallel implementations. Do not create duplicate versions of `HealthCard`, `ScoreEquation`, the verdict/color mapping, the sidebar, or any recommendation-display component — reuse the existing presentation primitives (this is why Task 6 adds a `variant` prop to the existing `ScoreEquation` instead of a new `LandingScoreEquation`/`CompactHealthCard` component).
 
 ### New color tokens
@@ -282,7 +282,7 @@ git commit -m "feat: sweep remaining literal colors to the new palette"
 - Test: `src/engine/assessmentAdapter.test.ts` (new)
 
 **Interfaces:**
-- Produces: `export interface NarratorTrace { model: string | null; prompt: string | null; response: string | null; }` in `src/ai/narrator.ts`, and `export interface AssessDebug { rawProfile: MSMEProfile; engineOutputs: { capabilityScore: number; penalties: Penalty[]; netScore: number; alternativeEvidenceScore: number; adjustedNetScore: number; hardFlags: HardFlag[]; recommendation: Recommendation; decisionConfidence: DecisionConfidence }; narratorModel: string | null; narratorPrompt: string | null; narratorResponse: string | null; }` in `src/types/debug.ts` — this is the type Task 4's `TransparencyPanel` (and Task 9's wizard) will import. `route.ts` imports it too; it does not declare it.
+- Produces: `export interface NarratorTrace { model: string | null; prompt: string | null; response: string | null; }` in `src/ai/narrator.ts`, and `export interface AssessDebug { rawProfile: MSMEProfile; engineOutputs: { capabilityScore: number; penalties: Penalty[]; netScore: number; alternativeEvidenceScore: number; adjustedNetScore: number; hardFlags: HardFlag[]; recommendation: Recommendation; decisionConfidence: DecisionConfidence }; narratorModel: string | null; narratorPrompt: string | null; narratorResponse: string | null; }` in `src/types/debug.ts` — this is the type Task 4's `TransparencyPanel` (and Task 10's wizard) will import. `route.ts` imports it too; it does not declare it.
 - Consumes: `CoreAssessment`, `MSMEProfile`, `Penalty`, `HardFlag`, `Recommendation`, `DecisionConfidence` from `@/engine/aegis-core` (all already exported).
 
 - [ ] **Step 1: Write the failing test for `narrate()`'s trace param**
@@ -605,7 +605,7 @@ git commit -m "feat: surface narrator prompt/response and engine outputs via dev
 ### Task 4: `TransparencyPanel` component, wired into the assess-form result view
 
 **Files:**
-- Create: `src/constants/profileFields.ts` (the single, shared `PROFILE_FIELD_ORDER` — do not redefine this array anywhere else; Task 9's Review step reuses this exact constant)
+- Create: `src/constants/profileFields.ts` (the single, shared `PROFILE_FIELD_ORDER` — do not redefine this array anywhere else; Task 10's Review step reuses this exact constant)
 - Create: `src/components/TransparencyPanel.tsx`
 - Modify: `src/components/assess/ProfileForm.tsx` (render it below the result `HealthCard`, only for the ad-hoc flow — this is the only place `_debug` exists)
 
@@ -615,7 +615,7 @@ git commit -m "feat: surface narrator prompt/response and engine outputs via dev
 
 - [ ] **Step 1: Create `src/constants/profileFields.ts`**
 
-This is the one place the 17-field order is defined. Task 9's Review step imports this same constant — do not let a second, hand-copied field list drift out of sync with it.
+This is the one place the 17-field order is defined. Task 10's Review step imports this same constant — do not let a second, hand-copied field list drift out of sync with it.
 
 ```ts
 import type { MSMEProfile } from "@/engine/aegis-core";
@@ -1047,7 +1047,7 @@ function EquationCell({ cell, compact = false }: { cell: Cell; compact?: boolean
 
 - [ ] **Step 2: Add the hero preview card to `src/app/page.tsx`**
 
-Add imports (top of file): `import { assess } from "@/engine/aegis-core"; import { SEEDS } from "@/data/seeds"; import { BUSINESS_PRESENTATION } from "@/data/presentation"; import { VERDICT_VISUAL } from "@/presentation/verdict"; import ScoreEquation from "@/components/health-card/ScoreEquation";`
+Add imports (top of file): `import { assess } from "@/engine/aegis-core"; import { SEEDS } from "@/data/seeds"; import { BUSINESS_PRESENTATION } from "@/data/presentation"; import { VERDICT_VISUAL } from "@/presentation/verdict"; import ScoreEquation from "@/components/health-card/ScoreEquation";` and add `Play` to the existing lucide-react import line (`import { Shield, LifeBuoy, ShieldAlert, TrendingUp, ArrowRight, Lock, Ban, Plus, MessageSquareText, Play } from "lucide-react";`).
 
 Compute the preview at the top of the `Landing()` function body: `const heroAssessment = assess(SEEDS.champion.profile); const heroPres = BUSINESS_PRESENTATION.champion; const heroVerdict = VERDICT_VISUAL[heroAssessment.recommendation];`
 
@@ -1072,6 +1072,12 @@ Wrap the current hero `<section>` (lines 55-75) and the new preview card into a 
               >
                 View Demo <ArrowRight className="h-4 w-4" strokeWidth={2} />
               </Link>
+              <a
+                href="#how-it-works"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#E5E7EB] px-5 py-3 text-sm font-semibold text-[#374151] transition-colors duration-150 hover:border-[#1a4731]"
+              >
+                <Play className="h-3.5 w-3.5" strokeWidth={2} fill="currentColor" /> How it works
+              </a>
               <span className="inline-flex items-center gap-1.5 text-sm text-[#6B7280]">
                 <Lock className="h-3.5 w-3.5" strokeWidth={1.75} /> Deterministic — no AI in scoring
               </span>
@@ -1130,26 +1136,118 @@ Wrap the current hero `<section>` (lines 55-75) and the new preview card into a 
 
 Note: this reads `heroAssessment.decisionTrace.primaryDrivers`/`riskDrivers` — real engine output for the Champion seed (confirmed via `aegis-core.ts`'s `buildTrace`), not invented copy. The "Key Strengths"/"Key Risks" list length depends on how many drivers the engine actually returns for Champion; do not pad with placeholder text if there are fewer than 3/2.
 
-- [ ] **Step 3: Run build and tests**
+- [ ] **Step 3: Give the "How it works" section an anchor target**
+
+Elsewhere in `src/app/page.tsx` (unrelated to the hero replacement above), find the existing `<section className="border-t border-[#E5E7EB] py-14">` that contains the `"How it works"` label and the 4-item `ENGINE` map — this is the section the new hero ghost button scrolls to. Add `id="how-it-works"` to that `<section>` tag (nothing else in it changes): `<section id="how-it-works" className="border-t border-[#E5E7EB] py-14">`.
+
+- [ ] **Step 4: Run build and tests**
 
 Run: `npx tsc --noEmit` — expect no errors (verify `HealthCard.tsx`'s existing `<ScoreEquation a={a} />` call still compiles with the new optional prop).
 Run: `npx vitest run` — expect the same 21 tests passing.
 Run: `npm run build` — expect a clean build.
 
-- [ ] **Step 4: Manual browser check**
+- [ ] **Step 5: Manual browser check**
 
-`npm run dev`, visit `/`. Confirm the hero now shows a 2-column layout on desktop (text left, Health Card preview right) and stacks on mobile (< 1024px); the preview card's numbers match what `/business/champion` shows for Meher Components.
+`npm run dev`, visit `/`. Confirm the hero now shows a 2-column layout on desktop (text left, Health Card preview right) and stacks on mobile (< 1024px); the preview card's numbers match what `/business/champion` shows for Meher Components. Click "How it works" and confirm the page scrolls down to the "How it works" section.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add src/components/health-card/ScoreEquation.tsx src/app/page.tsx
-git commit -m "feat: add compact score-equation variant and landing hero preview card"
+git commit -m "feat: add compact score-equation variant, landing hero preview card, and how-it-works anchor"
 ```
 
 ---
 
-### Task 7: Dashboard 2-column grid at ≥1024px
+### Task 7: Landing "Data Ecosystem" section
+
+**New content section, not in the earlier plan.** The landing page's job is to make Aegis's data story concrete: it doesn't invent new data, it stitches together signals already available across India's digital financial infrastructure. This task adds a static, purely-descriptive 8-card grid to `src/app/page.tsx`, between the existing "How it works" section and the closing CTA. No engine/data wiring — every card is hardcoded marketing copy, same spirit as the existing `MOAT`/`ENGINE` arrays already in this file.
+
+**Files:**
+- Modify: `src/app/page.tsx` (add one new section + a new `DATA_ECOSYSTEM` array, following the exact pattern of the existing `MOAT`/`ENGINE` consts)
+
+**Interfaces:**
+- Consumes: nothing — pure static content.
+- Produces: nothing new exported; this is page-local content.
+
+- [ ] **Step 1: Add the `DATA_ECOSYSTEM` array**
+
+Add this near the top of the file, alongside the existing `MOAT`/`ENGINE` consts, importing the additional icons used (`Landmark`, `Receipt`, `Droplets`, `FileSpreadsheet`, `Users`, `CreditCard`, `Building2`, `Smartphone` — add these to the existing lucide-react import line):
+
+```ts
+const DATA_ECOSYSTEM = [
+  { icon: Landmark, source: "Account Aggregator", purpose: "Consented financial information", signals: ["Cash-flow trends", "Banking behaviour", "Balance consistency", "Financial stability"], tag: "Consent-based" },
+  { icon: Receipt, source: "GSTN", purpose: "Business tax filing behaviour", signals: ["GST filing consistency", "Filing gaps", "Payment regularity", "Compliance history"], tag: "Government verified" },
+  { icon: Droplets, source: "BBPS", purpose: "Utility payment behaviour", signals: ["Electricity payments", "Utility consistency", "Payment discipline"], tag: "Verified payment records" },
+  { icon: FileSpreadsheet, source: "TReDS", purpose: "Invoice financing participation", signals: ["Invoice discounting", "Working capital usage", "Receivable behaviour"], tag: "Trade ecosystem" },
+  { icon: Users, source: "EPFO / ESIC", purpose: "Employment and workforce stability", signals: ["Workforce continuity", "Contribution consistency", "Operational stability"], tag: "Operational evidence" },
+  { icon: CreditCard, source: "Credit Bureau", purpose: "Traditional credit history", signals: ["Bureau score", "Existing defaults", "Delinquencies", "Credit history"], tag: "Traditional credit signal" },
+  { icon: Building2, source: "MCA / UDYAM", purpose: "Business identity verification", signals: ["Entity existence", "Registration status", "Business age"], tag: "Identity verification" },
+  { icon: Smartphone, source: "Digital Payments", purpose: "Business digital adoption", signals: ["Digital receipts", "Payment behaviour", "Transaction consistency"], tag: "Operational behaviour" },
+] as const;
+```
+
+- [ ] **Step 2: Add the section, between "How it works" and the closing CTA**
+
+Find the closing-CTA `<section>` (the one with `"See it decide on eight real archetypes."`). Immediately before it, insert:
+
+```tsx
+        {/* the data ecosystem */}
+        <section className="border-t border-[#E5E7EB] py-14">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6B7280]">The data ecosystem</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">Built on India&rsquo;s digital financial infrastructure.</h2>
+            <p className="mt-2 text-[15px] leading-relaxed text-[#6B7280]">
+              Aegis doesn&rsquo;t replace existing lending systems. It brings together verified financial, operational, and
+              ecosystem signals already available across India&rsquo;s digital infrastructure into one explainable Financial
+              Health Card.
+            </p>
+          </div>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {DATA_ECOSYSTEM.map(d => {
+              const Icon = d.icon;
+              return (
+                <div key={d.source} className="flex flex-col rounded-xl border border-[#E5E7EB] bg-white p-5">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f0fdf4]">
+                    <Icon className="h-[18px] w-[18px] text-[#1a4731]" strokeWidth={1.75} />
+                  </span>
+                  <h3 className="mt-3 text-sm font-semibold text-[#111827]">{d.source}</h3>
+                  <p className="mt-1 text-xs text-[#6B7280]">{d.purpose}</p>
+                  <ul className="mt-3 space-y-1">
+                    {d.signals.map(s => (
+                      <li key={s} className="text-xs leading-relaxed text-[#6B7280]">· {s}</li>
+                    ))}
+                  </ul>
+                  <span className="mt-4 inline-block w-fit rounded-full bg-[#F3F4F6] px-2.5 py-1 text-[11px] font-medium text-[#6B7280]">
+                    {d.tag}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+```
+
+- [ ] **Step 3: Run build and tests**
+
+Run: `npx tsc --noEmit` — expect no errors.
+Run: `npx vitest run` — expect the same 21 tests passing.
+Run: `npm run build` — expect a clean build.
+
+- [ ] **Step 4: Manual browser check**
+
+`npm run dev`, visit `/`. Confirm the new "Built on India's digital financial infrastructure" section renders between "How it works" and the closing CTA, with all 8 cards. At ≥1024px confirm a 4-column grid; at 640–1024px confirm 2 columns; below 640px confirm 1 column. No horizontal scroll at 390px.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/app/page.tsx
+git commit -m "feat: add landing page data-ecosystem section (8 ecosystem data sources)"
+```
+
+---
+
+### Task 8: Dashboard 2-column grid at ≥1024px
 
 **Files:**
 - Modify: `src/app/(app)/dashboard/page.tsx:32` (the business list container)
@@ -1181,13 +1279,86 @@ git commit -m "feat: 2-column application grid on the dashboard at desktop width
 
 ---
 
-### Task 8: Sidebar RM/relationship-manager and other pages — confirm no leftover 1024px 2-col dashboard regressions
+### Task 9: Transparency Panel — add the Data Provenance section
 
-This is a verification-only task folded into Task 9's final pass — no separate code changes. (Kept as a placeholder heading removed; see Task 10 for the consolidated verification checklist.) Skip — proceed to Task 9.
+**Follow-up to the already-merged Task 4.** After Task 4 shipped, the user asked for a fourth section — **Data Provenance** — prepended before the existing three (Raw Input Profile, Engine Outputs, Narrator). It is pure static/presentational content: a hardcoded table naming which ecosystem data sources fed this assessment and whether each was available, framing the demo's "built on India's digital financial infrastructure" narrative. It does **not** read from `_debug` or any engine field — it's editorial chrome, same spirit as `src/data/presentation.ts`'s `DEMO_INSIGHT` map (real content, but not derived from or scored by the engine).
+
+**Files:**
+- Modify: `src/components/TransparencyPanel.tsx` (add one new section, renumber the existing three from 1/2/3 to 2/3/4 in the UI copy only — no prop/type changes)
+
+**Interfaces:**
+- Consumes: nothing new — this section renders a hardcoded array, not a prop.
+- Produces: no signature change. `TransparencyPanel({ debug }: { debug: AssessDebug })` is unchanged; `ProfileForm.tsx` needs no edits for this task.
+
+- [ ] **Step 1: Add the hardcoded provenance data and render it as the first section**
+
+Add this above the `TransparencyPanel` component, alongside the file's other module-level consts:
+
+```ts
+const DATA_PROVENANCE: ReadonlyArray<{ source: string; available: boolean; signals: string }> = [
+  { source: "Credit Bureau", available: true, signals: "Bureau score" },
+  { source: "GSTN", available: true, signals: "Filing consistency" },
+  { source: "Account Aggregator", available: true, signals: "Cash-flow stability" },
+  { source: "BBPS", available: true, signals: "Utility payments" },
+  { source: "EPFO", available: false, signals: "Workforce stability" },
+  { source: "TReDS", available: true, signals: "Invoice financing" },
+];
+```
+
+Insert this as the first child inside the `{open && (<div className="divide-y ...">` block (i.e. immediately before the existing "Raw Input Profile" `<div className="p-6">`):
+
+```tsx
+          <div className="p-6">
+            <p className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">Data Provenance</p>
+            <p className="mt-1 text-xs text-[#9CA3AF]">
+              This assessment combines signals from verified ecosystem participants. Each signal contributes only where available.
+            </p>
+            <table className="mt-3 w-full border-collapse text-xs">
+              <thead>
+                <tr className="text-left text-[#9CA3AF]">
+                  <th className="px-3 py-1.5 font-medium">Source</th>
+                  <th className="px-3 py-1.5 font-medium">Status</th>
+                  <th className="px-3 py-1.5 font-medium">Signals Used</th>
+                </tr>
+              </thead>
+              <tbody>
+                {DATA_PROVENANCE.map((row, i) => (
+                  <tr key={row.source} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
+                    <td className={`px-3 py-1.5 ${row.available ? "text-[#111827]" : "text-[#9CA3AF]"}`}>{row.source}</td>
+                    <td className={`px-3 py-1.5 ${row.available ? "text-[#15803d]" : "text-[#9CA3AF]"}`}>{row.available ? "Available" : "Not Available"}</td>
+                    <td className={`px-3 py-1.5 ${row.available ? "text-[#111827]" : "text-[#9CA3AF]"}`}>{row.signals}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-2 text-xs italic text-[#9CA3AF]">Unavailable sources are ignored. They never create negative scores.</p>
+          </div>
+```
+
+- [ ] **Step 2: Renumber the existing three sections' copy (UI text only)**
+
+The existing "Raw Input Profile", "Engine Outputs", and "Narrator" sections keep their exact code — only update the mental/visual ordering by leaving them immediately after the new Data Provenance block you just inserted (no code change needed there beyond insertion order, since none of the existing three sections hardcode a number like "1."/"2." in their copy — confirm this by checking `TransparencyPanel.tsx`'s current text; if you find a hardcoded step number anywhere, update it to match the new 1-2-3-4 order).
+
+- [ ] **Step 3: Run build and tests**
+
+Run: `npx tsc --noEmit` — expect no errors.
+Run: `npx vitest run` — expect the same 21 tests passing (this task touches no test-covered logic).
+Run: `npm run build` — expect a clean build.
+
+- [ ] **Step 4: Manual browser check**
+
+`npm run dev`, visit `/assess`, submit the default example. Confirm the "Engine Computation Log" accordion now shows 4 sections in order: Data Provenance (first), Raw Input Profile, Engine Outputs, Narrator. Confirm the Data Provenance table shows 6 rows with EPFO greyed out as "Not Available" and the other 5 as "Available" in green.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/components/TransparencyPanel.tsx
+git commit -m "feat: add Data Provenance section to the Transparency Panel"
+```
 
 ---
 
-### Task 9: Assess wizard — convert `ProfileForm` to a 5-step stepper
+### Task 10: Assess wizard — convert `ProfileForm` to a 5-step stepper
 
 **Files:**
 - Modify: `src/components/assess/ProfileForm.tsx` (restructure into a stepper; same 13+4 fields, same `toRaw()`/`validateProfile()`/submit-to-`/api/assess` logic, same `TransparencyPanel` wiring from Task 4)
@@ -1196,13 +1367,51 @@ This is a verification-only task folded into Task 9's final pass — no separate
 - Consumes: everything already imported by `ProfileForm.tsx` today, plus `Check`, `ChevronLeft`, `ChevronRight` icons from `lucide-react`, plus `PROFILE_FIELD_ORDER` from `@/constants/profileFields` (created in Task 4 — the Review step reuses this exact constant instead of `Object.keys(form)`, so its row order matches the Transparency Panel's raw-input table order).
 - Produces: same `export default function ProfileForm()` signature — `src/app/(app)/assess/page.tsx` is untouched.
 
-**Step re-grouping (deviates from the original design brief, which listed business name/turnover/industry/GSTIN/city — none of which exist in `MSMEProfile`; adding them would be inert decoration with no effect on the score, so they're deliberately left out):**
+**Step re-grouping — engine fields, unchanged from the earlier plan:**
 
-1. **Business** — `yearsOperating`, `cashflowTrend`, `seasonality`
+1. **Business** — `yearsOperating`, `cashflowTrend`, `seasonality`, **plus 5 decorative-only fields** (business name, annual turnover, industry, GSTIN, city — see Step 0 below)
 2. **Financial** — `gstOnTimeRate`, `gstMaxGapCycles`, `gstLastCycleLate`, `digitalReceiptsShare`, `digitalHistoryMonths`, `avgReceivableDays`, `topVendorShare`
 3. **Risk Flags** — `seasonalCashDip`, `activeDefault`, `kycMismatch`
 4. **Operational Evidence** — `electricityTrend`, `workforceTrend`, `utilityPayment`, `tredsHistory`
-5. **Review** — summary table of all 17 fields + submit
+5. **Review** — summary table of the real 17 `MSMEProfile` fields (via `PROFILE_FIELD_ORDER`, unchanged) + a separate, clearly-labeled "display only" block for the 5 decorative fields + submit
+
+**On the 5 decorative fields (business name / annual turnover / industry / GSTIN / city):** these do not exist in `MSMEProfile` and have zero effect on the assessment. The user has explicitly asked for them back as narrative chrome — each rendered with a muted "source hint" line (e.g. "From MCA / UDYAM registration") showing where such data would normally come from in a real deployment. They live in their own local `useState`, are never read by `toRaw()`, never validated by `validateProfile()`, and never appear in `PROFILE_FIELD_ORDER` or the Transparency Panel — keep this boundary exact so nobody mistakes them for scored inputs.
+
+- [ ] **Step 0: Add the decorative-only business-identity fields**
+
+These are display chrome, not engine inputs — keep them entirely separate from `FormState`/`toRaw()`/`validateProfile()`.
+
+Add above `export default function ProfileForm()`, alongside the other field-metadata consts:
+
+```ts
+type BusinessIdentity = {
+  businessName: string;
+  annualTurnover: string;
+  industry: string;
+  gstin: string;
+  city: string;
+};
+
+const BUSINESS_IDENTITY_FIELDS: ReadonlyArray<{
+  key: keyof BusinessIdentity;
+  label: string;
+  hint: string;
+}> = [
+  { key: "businessName", label: "Business name", hint: "From MCA / UDYAM registration" },
+  { key: "annualTurnover", label: "Annual turnover (₹)", hint: "Typically from Account Aggregator or GST returns" },
+  { key: "industry", label: "Industry", hint: "From business registration" },
+  { key: "gstin", label: "GSTIN", hint: "From GSTN" },
+  { key: "city", label: "City", hint: "From business registration" },
+];
+
+const EMPTY_BUSINESS_IDENTITY: BusinessIdentity = {
+  businessName: "", annualTurnover: "", industry: "", gstin: "", city: "",
+};
+```
+
+Inside `ProfileForm()`, add the state (near the other `useState` calls, around line 193): `const [identity, setIdentity] = useState<BusinessIdentity>(EMPTY_BUSINESS_IDENTITY);`
+
+Add a setter alongside the existing `set()` helper: `const setIdentity_ = <K extends keyof BusinessIdentity>(key: K, value: string) => setIdentity((prev) => ({ ...prev, [key]: value }));` (name it whatever reads cleanly next to the existing `set` — the point is it only ever touches `identity` state, never `form`).
 
 - [ ] **Step 1: Add step state and navigation to `ProfileForm.tsx`**
 
@@ -1255,7 +1464,7 @@ Add the shared field-order import (near line 9, alongside the other `@/` imports
 
 - [ ] **Step 3: Restructure the form body into stepped sections**
 
-The existing 4 `<section>` blocks (Business info / Financial signals / Risk flags / Operational evidence, lines 271-417) already match the 13+4 field grouping almost exactly — Task 9 only needs to (a) show one section at a time based on `step`, (b) add a 5th Review section, (c) add Back/Next navigation, and (d) validate only the current step's fields before advancing (full `validateProfile()` stays the sole authority at final submit — this just gates step-to-step navigation with the same validator, never a separate partial schema).
+The existing 4 `<section>` blocks (Business info / Financial signals / Risk flags / Operational evidence, lines 271-417) already match the 13+4 field grouping almost exactly — Task 10 only needs to (a) show one section at a time based on `step`, (b) add a 5th Review section, (c) add Back/Next navigation, (d) validate only the current step's fields before advancing (full `validateProfile()` stays the sole authority at final submit — this just gates step-to-step navigation with the same validator, never a separate partial schema), and (e) add the decorative business-identity fields from Step 0 into Step 1 and the Review step.
 
 Add this just above the `return` statement, inside `ProfileForm()`:
 
@@ -1348,6 +1557,26 @@ Wrap the `<form>` return (replacing lines 249-447) with:
                   </div>
                 ))}
               </div>
+
+              {/* Decorative-only — display chrome, never submitted or validated */}
+              <div className="mt-6 border-t border-[#E5E7EB] pt-5">
+                <p className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">Business identity <span className="normal-case font-normal">(display only — not scored)</span></p>
+                <div className="mt-3 grid gap-x-6 gap-y-5 sm:grid-cols-2">
+                  {BUSINESS_IDENTITY_FIELDS.map((fld) => (
+                    <div key={fld.key}>
+                      <label htmlFor={`identity-${fld.key}`} className="block text-sm font-medium text-[#111827]">{fld.label}</label>
+                      <input
+                        id={`identity-${fld.key}`}
+                        type="text"
+                        value={identity[fld.key]}
+                        onChange={(e) => setIdentity_(fld.key, e.target.value)}
+                        className={inputBase}
+                      />
+                      <p className="mt-1 text-xs text-[#9CA3AF]">{fld.hint}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </section>
           )}
 
@@ -1427,7 +1656,21 @@ Wrap the `<form>` return (replacing lines 249-447) with:
           {step === 4 && (
             <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
               <SectionHeader title="Review" hint="Zod validates on submit — fix any highlighted fields if they appear." />
-              <table className="w-full border-collapse text-sm">
+
+              <p className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">Business identity <span className="normal-case font-normal">(display only — not submitted)</span></p>
+              <table className="mt-2 w-full border-collapse text-sm">
+                <tbody>
+                  {BUSINESS_IDENTITY_FIELDS.map((fld, i) => (
+                    <tr key={fld.key} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
+                      <td className="px-3 py-1.5 text-[#6B7280]">{fld.label}</td>
+                      <td className="px-3 py-1.5 text-[#111827]">{identity[fld.key] || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <p className="mt-6 text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">Signals submitted to the engine</p>
+              <table className="mt-2 w-full border-collapse text-sm">
                 <tbody>
                   {PROFILE_FIELD_ORDER.map((key, i) => (
                     <tr key={key} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
@@ -1530,22 +1773,21 @@ Run: `npm run build` — expect a clean build.
 - Click "Load example" (Meher Components) on step 1 — confirm fields populate and step stays at 1.
 - Click "Next" through all 5 steps, confirm the stepper advances and "Back" returns correctly at each step.
 - On step 2 (Financial), clear the "GST on-time rate" field to blank and click "Next" — confirm the wizard does NOT advance to step 3, shows the field's inline error, and the field's error clears once you fix the value and click "Next" again.
-- On step 5 (Review), confirm the summary table shows all 17 fields in the same order as the Transparency Panel's "Raw Input Profile" table (both now read `PROFILE_FIELD_ORDER`).
-- Submit — confirm the Health Card renders with the "Live engine result" label and the Engine Computation Log accordion appears below it (from Task 4).
+- On step 1, fill in the 5 decorative business-identity fields (Business name, Annual turnover, Industry, GSTIN, City) — confirm each shows its muted source-hint line below the label.
+- On step 5 (Review), confirm the summary shows two separate tables: "Business identity (display only)" with the 5 decorative values entered on step 1, then "Signals submitted to the engine" with all 17 real fields in the same order as the Transparency Panel's "Raw Input Profile" table (both now read `PROFILE_FIELD_ORDER`).
+- Submit — confirm the Health Card renders with the "Live engine result" label and the Engine Computation Log accordion appears below it (from Task 4). Open the accordion's "Raw Input Profile" section and confirm none of the 5 decorative fields (business name, turnover, industry, GSTIN, city) appear anywhere in it — only the real 17 `MSMEProfile` fields.
 - Go back to step 1, clear a required field (e.g. blank `gstOnTimeRate` on step 2) and submit from step 5 — confirm the wizard jumps back to step 2 with the field's error message shown, engine is NOT called (no new result renders).
 
 - [ ] **Step 6: Commit**
 
 ```bash
 git add src/components/assess/ProfileForm.tsx
-git commit -m "feat: convert the assess form into a 5-step wizard"
+git commit -m "feat: convert the assess form into a 5-step wizard with decorative business-identity fields"
 ```
-
-After this task, tell the user: the wizard's Step 1 does not include business name/turnover/industry/GSTIN/city — those fields don't exist in `MSMEProfile` and would have no effect on the assessment. If they want them purely as descriptive/display-only fields (never sent to the engine), that's a follow-up, separate from this plan.
 
 ---
 
-### Task 10: Final full-repo verification pass
+### Task 11: Final full-repo verification pass
 
 **Files:** none (verification only).
 
@@ -1576,11 +1818,23 @@ Then confirm the dev-only gate actually holds in a production build: `npm run bu
 
 At 1280px, 768px, and 390px widths, visit `/`, `/dashboard`, `/business/champion`, `/business/mirage` (hard-flagged — confirm Policy Flags panel is red `#dc2626`/`#fef2f2` and Recommendation banner matches), `/assess` (walk the wizard once more), `/simulator/climber`. Confirm at each width: no horizontal scroll, mobile drawer works below 1024px, no emoji anywhere, dashboard is 2-column at ≥1024px and 1-column below. On `/business/evidence` at 390px specifically, confirm the Score Equation (which has all 5 cells for this seed) stacks into two rows — `Capability − Penalties = Net` then `+ Evidence = Adjusted` — rather than needing horizontal scroll to see the Adjusted Net cell.
 
-- [ ] **Step 6: Report**
+- [ ] **Step 6: Landing "Data Ecosystem" section check**
 
-Summarize pass/fail for each of the checks above and list every file touched across Tasks 1–9 (git diff/status).
+On `/`, confirm the "Built on India's digital financial infrastructure" section (Task 7) renders between "How it works" and the closing CTA with all 8 cards, and that clicking the hero's "How it works" ghost button scrolls to the "How it works" section (Task 6's anchor).
 
-- [ ] **Step 7: Final commit (if anything was left uncommitted)**
+- [ ] **Step 7: Transparency Panel "Data Provenance" check**
+
+On `/assess`, submit a profile, open the Engine Computation Log, confirm 4 sections appear in order (Data Provenance, Raw Input Profile, Engine Outputs, Narrator) and the Data Provenance table shows EPFO as "Not Available" (grey) and the other 5 sources as "Available" (green).
+
+- [ ] **Step 8: Wizard decorative-fields boundary check**
+
+On `/assess`, fill in the 5 decorative business-identity fields (business name, turnover, industry, GSTIN, city) on step 1, complete the wizard, and submit. Confirm: the Review step (step 5) shows them in a separate "display only" table; the submitted `/api/assess` request body (check via DevTools Network tab) does NOT include any of the 5 decorative field names; the Transparency Panel's Raw Input Profile table does NOT show them either — only the 17 real `MSMEProfile`/`PROFILE_FIELD_ORDER` fields.
+
+- [ ] **Step 9: Report**
+
+Summarize pass/fail for each of the checks above and list every file touched across Tasks 1–10 (git diff/status).
+
+- [ ] **Step 10: Final commit (if anything was left uncommitted)**
 
 ```bash
 git status
