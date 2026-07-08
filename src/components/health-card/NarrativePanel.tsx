@@ -20,7 +20,7 @@ export default function NarrativePanel({ narrative }: { narrative: string | null
     <section className="grid gap-6 rounded-xl border border-[#E5E7EB] bg-white p-6 lg:grid-cols-[1fr_320px]">
       <div>
         <div className="flex items-center gap-2">
-          <FileText className="h-[18px] w-[18px] text-[#1F5E4A]" strokeWidth={1.75} />
+          <FileText className="h-[18px] w-[18px] text-[#1a4731]" strokeWidth={1.75} />
           <h2 className="text-sm font-semibold text-[#111827]">Business Narrative</h2>
         </div>
         {narrative ? (
@@ -37,7 +37,7 @@ export default function NarrativePanel({ narrative }: { narrative: string | null
         )}
       </div>
 
-      <dl className="space-y-0 divide-y divide-[#F1F3F2] rounded-lg bg-[#F8FAF9] p-4">
+      <dl className="space-y-0 divide-y divide-[#F1F3F2] rounded-lg bg-[#f3f4f6] p-4">
         <MetaRow label="Assessment Date" value={date} />
         <MetaRow label="Model Version" value={MODEL_VERSION} />
         <MetaRow label="Engine" value={ENGINE_DESCRIPTOR} />
