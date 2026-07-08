@@ -23,9 +23,9 @@ export interface ToneTokens {
 }
 
 export const TONES: Record<Tone, ToneTokens> = {
-  approve:     { ink: "#14532D", accent: "#1D6F42", tint: "#ECF5EF", border: "#CFE6D8", line: "#1D6F42" },
-  conditional: { ink: "#7C4A03", accent: "#B45309", tint: "#FEF3E2", border: "#F1DDBE", line: "#B45309" },
-  refer:       { ink: "#7A2615", accent: "#B23A1E", tint: "#FBEAE5", border: "#E7C4B8", line: "#B23A1E" },
+  approve:     { ink: "#166534", accent: "#15803d", tint: "#f0fdf4", border: "#15803d40", line: "#15803d" },
+  conditional: { ink: "#ea580c", accent: "#ea580c", tint: "#ea580c1a", border: "#ea580c40", line: "#ea580c" },
+  refer:       { ink: "#dc2626", accent: "#dc2626", tint: "#fef2f2", border: "#dc262640", line: "#dc2626" },
 };
 
 export interface RecommendationView {

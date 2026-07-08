@@ -9,7 +9,7 @@ import type { Recommendation } from "@/engine/aegis-core";
  * for how a decision looks, so the same green/amber/terracotta reads everywhere.
  * It does not change the decision — it only dresses it.
  *
- * Colours: approve #1F5E4A · conditional/path #B7791F · refer/flag #B42318.
+ * Colours: approve #15803d · conditional/path #ea580c · refer/flag #dc2626.
  */
 export interface VerdictVisual {
   icon: LucideIcon;
@@ -19,8 +19,8 @@ export interface VerdictVisual {
 }
 
 export const VERDICT_VISUAL: Record<Recommendation, VerdictVisual> = {
-  APPROVE:           { icon: CheckCircle2,  color: "#1F5E4A", tint: "#ECF3F0", label: "Approve" },
-  CONDITIONAL:       { icon: CircleAlert,   color: "#B7791F", tint: "#FBF3E5", label: "Conditional" },
-  DECLINE_WITH_PATH: { icon: TrendingUp,    color: "#B7791F", tint: "#FBF3E5", label: "Path to yes" },
-  REFER_OR_DECLINE:  { icon: AlertTriangle, color: "#B42318", tint: "#FBEBE9", label: "Refer / Decline" },
+  APPROVE:           { icon: CheckCircle2,  color: "#15803d", tint: "#f0fdf4",   label: "Approve" },
+  CONDITIONAL:       { icon: CircleAlert,   color: "#ea580c", tint: "#ea580c1a", label: "Conditional" },
+  DECLINE_WITH_PATH: { icon: TrendingUp,    color: "#ea580c", tint: "#ea580c1a", label: "Path to yes" },
+  REFER_OR_DECLINE:  { icon: AlertTriangle, color: "#dc2626", tint: "#fef2f2",   label: "Refer / Decline" },
 };
