@@ -29,7 +29,7 @@ export default function Dashboard() {
         <KpiRow businesses={businesses} />
       </div>
 
-      <ul className="mt-6 space-y-3">
+      <ul className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
         {businesses.map(({ meta, recommendation, decisionConfidence }) => {
           const v = VERDICT_VISUAL[recommendation];
           const Icon = v.icon;
@@ -39,7 +39,7 @@ export default function Dashboard() {
             <li key={meta.id}>
               <Link
                 href={`/business/${meta.id}`}
-                className="flex flex-col gap-4 rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-sm transition-colors duration-150 hover:border-[#1a4731] sm:flex-row sm:items-start sm:justify-between"
+                className="flex flex-col gap-4 rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-sm transition-colors duration-150 hover:border-[#1a4731] xl:flex-row xl:items-start xl:justify-between"
               >
                 <div className="flex min-w-0 items-start gap-3.5">
                   {/* status icon coloured by the AEGIS verdict, never the bureau verdict */}
