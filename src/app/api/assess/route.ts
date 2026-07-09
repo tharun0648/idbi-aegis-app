@@ -30,28 +30,29 @@ export async function POST(req: Request) {
   const narratorTrace: NarratorTrace = { model: null, prompt: null, response: null };
   const assessment = await assessAdHoc(result.profile, narratorTrace);
 
-  // _debug is development-only: it carries the raw profile and the narrator's
-  // prompt/response text, which are useful for building/demoing the
-  // Transparency Panel but should never leave a production response.
-  if (process.env.NODE_ENV === "development") {
-    const _debug: AssessDebug = {
-      rawProfile: result.profile,
-      engineOutputs: {
-        capabilityScore: assessment.capabilityScore,
-        penalties: assessment.penalties,
-        netScore: assessment.netScore,
-        alternativeEvidenceScore: assessment.alternativeEvidenceScore,
-        adjustedNetScore: assessment.adjustedNetScore,
-        hardFlags: assessment.hardFlags,
-        recommendation: assessment.recommendation,
-        decisionConfidence: assessment.decisionConfidence,
-      },
-      narratorModel: narratorTrace.model,
-      narratorPrompt: narratorTrace.prompt,
-      narratorResponse: narratorTrace.response,
-    };
-    return NextResponse.json({ ok: true, assessment, _debug });
-  }
+  // _debug is opt-in via AEGIS_DEBUG_PANEL: it carries the raw profile and the
+  // narrator's prompt/response text, which feed the Transparency Panel. Gated
+  // on an explicit env var (not NODE_ENV) so it can be turned on for the live
+  // demo deployment without exposing it on every production build by default.
+  const debugEnabled = process.env.AEGIS_DEBUG_PANEL === "true";
+  const _debug: AssessDebug | undefined = debugEnabled
+    ? {
+        rawProfile: result.profile,
+        engineOutputs: {
+          capabilityScore: assessment.capabilityScore,
+          penalties: assessment.penalties,
+          netScore: assessment.netScore,
+          alternativeEvidenceScore: assessment.alternativeEvidenceScore,
+          adjustedNetScore: assessment.adjustedNetScore,
+          hardFlags: assessment.hardFlags,
+          recommendation: assessment.recommendation,
+          decisionConfidence: assessment.decisionConfidence,
+        },
+        narratorModel: narratorTrace.model,
+        narratorPrompt: narratorTrace.prompt,
+        narratorResponse: narratorTrace.response,
+      }
+    : undefined;
 
-  return NextResponse.json({ ok: true, assessment });
+  return NextResponse.json({ ok: true, assessment, ...(debugEnabled && { _debug }) });
 }

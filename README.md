@@ -16,7 +16,7 @@ India has 7.1 crore Udyam-registered MSMEs; only about 3.3 crore are credit-acti
 
 ## Live demo
 
-**[LIVE DEMO URL — add the Vercel deployment link here]**
+**[idbi-aegis.vercel.app](https://idbi-aegis.vercel.app/)**
 
 The dashboard has eight seeded businesses, each built to exercise a specific part of the decision logic:
 
