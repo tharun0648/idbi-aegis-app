@@ -9,7 +9,6 @@ export interface SeededBusiness {
   id: "champion" | "mirage" | "climber" | "prime" | "cusp" | "default" | "kyc" | "evidence";
   businessName: string;
   archetype: string;
-  emoji: string;
   bureauScore: number | null;
   bureauVerdict: "reject" | "borderline" | "approvable";
   profile: MSMEProfile;
@@ -17,7 +16,7 @@ export interface SeededBusiness {
 
 export const SEEDS: Record<SeededBusiness["id"], SeededBusiness> = {
   champion: {
-    id: "champion", businessName: "Meher Components", archetype: "Invisible Champion", emoji: "⭐",
+    id: "champion", businessName: "Meher Components", archetype: "Invisible Champion",
     bureauScore: null, bureauVerdict: "reject",
     profile: {
       cashflowTrend: "stable", gstOnTimeRate: 0.90, gstMaxGapCycles: 0, gstLastCycleLate: false,
@@ -27,7 +26,7 @@ export const SEEDS: Record<SeededBusiness["id"], SeededBusiness> = {
     },
   },
   mirage: {
-    id: "mirage", businessName: "Surya Traders", archetype: "The Mirage", emoji: "⚠️",
+    id: "mirage", businessName: "Surya Traders", archetype: "The Mirage",
     bureauScore: 720, bureauVerdict: "approvable",
     profile: {
       cashflowTrend: "volatile", gstOnTimeRate: 0.50, gstMaxGapCycles: 3, gstLastCycleLate: true,
@@ -37,7 +36,7 @@ export const SEEDS: Record<SeededBusiness["id"], SeededBusiness> = {
     },
   },
   climber: {
-    id: "climber", businessName: "Nila Foods", archetype: "The Climber", emoji: "📈",
+    id: "climber", businessName: "Nila Foods", archetype: "The Climber",
     bureauScore: null, bureauVerdict: "borderline",
     profile: {
       cashflowTrend: "improving", gstOnTimeRate: 0.67, gstMaxGapCycles: 1, gstLastCycleLate: true,
@@ -51,7 +50,7 @@ export const SEEDS: Record<SeededBusiness["id"], SeededBusiness> = {
 
   // Clean, high-confidence APPROVE with zero penalties and no flags.
   prime: {
-    id: "prime", businessName: "Lakshmi Engineering", archetype: "Prime Performer", emoji: "🏆",
+    id: "prime", businessName: "Lakshmi Engineering", archetype: "Prime Performer",
     bureauScore: 780, bureauVerdict: "approvable",
     profile: {
       cashflowTrend: "growing", gstOnTimeRate: 0.98, gstMaxGapCycles: 0, gstLastCycleLate: false,
@@ -63,7 +62,7 @@ export const SEEDS: Record<SeededBusiness["id"], SeededBusiness> = {
 
   // CONDITIONAL band (net 50–59): strengths present but soft risks need terms.
   cusp: {
-    id: "cusp", businessName: "Anil Textiles", archetype: "On the Cusp", emoji: "⚖️",
+    id: "cusp", businessName: "Anil Textiles", archetype: "On the Cusp",
     bureauScore: 690, bureauVerdict: "borderline",
     profile: {
       cashflowTrend: "volatile", gstOnTimeRate: 0.6, gstMaxGapCycles: 1, gstLastCycleLate: false,
@@ -75,7 +74,7 @@ export const SEEDS: Record<SeededBusiness["id"], SeededBusiness> = {
 
   // ACTIVE_DEFAULT hard-flag knockout — strong surface, but a live default overrides.
   default: {
-    id: "default", businessName: "Vikram Logistics", archetype: "Overextended", emoji: "🚩",
+    id: "default", businessName: "Vikram Logistics", archetype: "Overextended",
     bureauScore: 640, bureauVerdict: "reject",
     profile: {
       cashflowTrend: "stable", gstOnTimeRate: 0.88, gstMaxGapCycles: 0, gstLastCycleLate: false,
@@ -87,7 +86,7 @@ export const SEEDS: Record<SeededBusiness["id"], SeededBusiness> = {
 
   // KYC_MISMATCH hard-flag knockout — identity inconsistency overrides the score.
   kyc: {
-    id: "kyc", businessName: "Priya Exports", archetype: "Identity Gap", emoji: "🔍",
+    id: "kyc", businessName: "Priya Exports", archetype: "Identity Gap",
     bureauScore: 710, bureauVerdict: "approvable",
     profile: {
       cashflowTrend: "improving", gstOnTimeRate: 0.92, gstMaxGapCycles: 0, gstLastCycleLate: false,
@@ -103,7 +102,7 @@ export const SEEDS: Record<SeededBusiness["id"], SeededBusiness> = {
   // (electricity growing +3, utility always-on-time +3, workforce stable +1 →
   // +7 → adjusted 62 → APPROVE). No hard flags. THIS seed is the feature demo.
   evidence: {
-    id: "evidence", businessName: "Kavya Textiles", archetype: "Verified Operator", emoji: "🔌",
+    id: "evidence", businessName: "Kavya Textiles", archetype: "Verified Operator",
     bureauScore: null, bureauVerdict: "borderline",
     profile: {
       cashflowTrend: "volatile", gstOnTimeRate: 0.67, gstMaxGapCycles: 0, gstLastCycleLate: false,

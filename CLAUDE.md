@@ -43,7 +43,7 @@ MSMEProfile (src/data/seeds.ts)
 There are **two entry points into the same engine**, and they converge on the same `EnrichedAssessment` contract and the same `<HealthCard>`:
 
 1. **Seed path** (above): `getAssessment(id)` looks a seeded business up by id — no validation needed, seeds are trusted.
-2. **Public-input path**: `/assess` page → `<ProfileForm>` (`src/components/assess/ProfileForm.tsx`) → `POST /api/assess` (`src/app/api/assess/route.ts`) → `validateProfile()` (`src/engine/profileSchema.ts`) → `assessAdHoc(profile)`. Untrusted input is Zod-validated at the boundary *before* it reaches the engine; on failure the route returns `400` with per-field errors and `assess()` is never called.
+2. **Public-input path**: `/assess` page → `<ProfileForm>` (`src/components/assess/ProfileForm.tsx`) → `POST /api/assess` (`src/app/api/assess/route.ts`) → `validateProfile()` (`src/engine/profileSchema.ts`) → `assessAdHoc(profile)`. Untrusted input is Zod-validated at the boundary *before* it reaches the engine; on failure the route returns `400` with per-field errors and `assess()` is never called. In development only (`NODE_ENV === "development"`), the response also carries a `_debug` block (`src/types/debug.ts`: raw profile, engine outputs, narrator model/prompt/response) that feeds the `<TransparencyPanel>`; it's absent in production and never appears on the dashboard's `listBusinessSummaries()` path.
 
 Key invariants to preserve when editing:
 
