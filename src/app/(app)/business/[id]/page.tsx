@@ -4,18 +4,37 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, TrendingUp } from "lucide-react";
 import HealthCard from "@/components/health-card/HealthCard";
+import TransparencyPanel from "@/components/TransparencyPanel";
+import { SEEDS, type SeededBusiness } from "@/data/seeds";
 import type { EnrichedAssessment } from "@/engine/assessmentAdapter";
+import type { AssessDebug } from "@/types/debug";
 
 export default function BusinessPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [a, setA] = useState<EnrichedAssessment | null>(null);
+  const [debug, setDebug] = useState<AssessDebug | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
     let alive = true;
-    fetch(`/api/assessment/${id}`)
-      .then(r => (r.ok ? r.json() : Promise.reject()))
-      .then(data => { if (alive) { setA(data); setStatus("ready"); } })
+    const seed = SEEDS[id as SeededBusiness["id"]];
+    if (!seed) {
+      setStatus("error");
+      return;
+    }
+    fetch("/api/assess", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(seed.profile),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (!alive) return;
+        if (!data.ok) { setStatus("error"); return; }
+        setA(data.assessment as EnrichedAssessment);
+        setDebug((data._debug as AssessDebug) ?? null);
+        setStatus("ready");
+      })
       .catch(() => alive && setStatus("error"));
     return () => { alive = false; };
   }, [id]);
@@ -40,7 +59,16 @@ export default function BusinessPage({ params }: { params: Promise<{ id: string 
 
       {status === "loading" && <p className="text-center text-sm text-[#9CA3AF]">Evaluating with Aegis…</p>}
       {status === "error" && <p className="text-center text-sm text-[#dc2626]">Couldn&apos;t load this assessment.</p>}
-      {status === "ready" && a && <HealthCard a={a} />}
+      {status === "ready" && a && (
+        <>
+          <HealthCard a={a} />
+          {debug && (
+            <div className="mx-auto mt-6 w-full max-w-[1180px]">
+              <TransparencyPanel debug={debug} />
+            </div>
+          )}
+        </>
+      )}
     </main>
   );
 }

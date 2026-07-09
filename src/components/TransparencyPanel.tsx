@@ -5,12 +5,6 @@ import { Terminal, ChevronDown } from "lucide-react";
 import type { AssessDebug } from "@/types/debug";
 import { PROFILE_FIELD_ORDER } from "@/constants/profileFields";
 
-function fmt(v: unknown): string {
-  if (v === undefined) return "—";
-  if (typeof v === "object") return JSON.stringify(v);
-  return String(v);
-}
-
 const DATA_PROVENANCE: ReadonlyArray<{ source: string; available: boolean; signals: string }> = [
   { source: "Credit Bureau", available: true, signals: "Bureau score" },
   { source: "GSTN", available: true, signals: "Filing consistency" },
@@ -19,6 +13,45 @@ const DATA_PROVENANCE: ReadonlyArray<{ source: string; available: boolean; signa
   { source: "EPFO", available: false, signals: "Workforce stability" },
   { source: "TReDS", available: true, signals: "Invoice financing" },
 ];
+
+/**
+ * Renders one value cell in the Engine Outputs / Raw Input Profile tables.
+ * Objects/arrays get a pretty-printed, scrollable JSON block so they never
+ * blow out the row's width. Primitives wrap with break-words; on mobile they
+ * additionally truncate to one line and expand on tap (own state per cell,
+ * since each row's overflow behaviour is independent).
+ */
+function ValueCell({ value }: { value: unknown }) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (value === undefined) {
+    return <td className="px-3 py-1.5 align-top text-[#111827]">—</td>;
+  }
+
+  if (typeof value === "object" && value !== null) {
+    return (
+      <td className="px-3 py-1.5 align-top text-[#111827]">
+        <pre className="max-w-full overflow-x-auto whitespace-pre-wrap rounded bg-[#f9fafb] p-2 text-xs font-mono text-[#111827]">
+          {JSON.stringify(value, null, 2)}
+        </pre>
+      </td>
+    );
+  }
+
+  return (
+    <td className="px-3 py-1.5 align-top text-[#111827]">
+      <span
+        onClick={() => setExpanded((e) => !e)}
+        className={`block max-w-full break-words ${
+          expanded ? "whitespace-normal" : "cursor-pointer truncate sm:cursor-auto sm:whitespace-normal"
+        }`}
+        style={{ overflowWrap: "break-word" }}
+      >
+        {String(value)}
+      </span>
+    </td>
+  );
+}
 
 /**
  * Collapsible accordion showing the exact inputs/outputs/narrator payload that
@@ -56,55 +89,69 @@ export default function TransparencyPanel({ debug }: { debug: AssessDebug }) {
               A production deployment draws signals from these verified ecosystem participants. This table illustrates the
               ecosystem Aegis is built to consume — it is not a live check against this specific submission.
             </p>
-            <table className="mt-3 w-full border-collapse text-xs">
-              <thead>
-                <tr className="text-left text-[#9CA3AF]">
-                  <th className="px-3 py-1.5 font-medium">Source</th>
-                  <th className="px-3 py-1.5 font-medium">Status</th>
-                  <th className="px-3 py-1.5 font-medium">Signals Used</th>
-                </tr>
-              </thead>
-              <tbody>
-                {DATA_PROVENANCE.map((row, i) => (
-                  <tr key={row.source} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
-                    <td className={`px-3 py-1.5 ${row.available ? "text-[#111827]" : "text-[#9CA3AF]"}`}>{row.source}</td>
-                    <td className={`px-3 py-1.5 ${row.available ? "text-[#15803d]" : "text-[#9CA3AF]"}`}>{row.available ? "Available" : "Not Available"}</td>
-                    <td className={`px-3 py-1.5 ${row.available ? "text-[#111827]" : "text-[#9CA3AF]"}`}>{row.signals}</td>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full border-collapse text-xs">
+                <thead>
+                  <tr className="text-left text-[#9CA3AF]">
+                    <th className="px-3 py-1.5 font-medium">Source</th>
+                    <th className="px-3 py-1.5 font-medium">Status</th>
+                    <th className="px-3 py-1.5 font-medium">Signals Used</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {DATA_PROVENANCE.map((row, i) => (
+                    <tr key={row.source} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
+                      <td className={`px-3 py-1.5 ${row.available ? "text-[#111827]" : "text-[#9CA3AF]"}`}>{row.source}</td>
+                      <td className={`px-3 py-1.5 ${row.available ? "text-[#15803d]" : "text-[#9CA3AF]"}`}>{row.available ? "Available" : "Not Available"}</td>
+                      <td className={`px-3 py-1.5 ${row.available ? "text-[#111827]" : "text-[#9CA3AF]"}`}>{row.signals}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <p className="mt-2 text-xs italic text-[#9CA3AF]">Unavailable sources are ignored. They never create negative scores.</p>
           </div>
 
           <div className="p-6">
             <p className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">Raw Input Profile</p>
             <p className="mt-1 text-xs text-[#9CA3AF]">These are the 13 required signals plus 4 optional operational-evidence signals submitted to the Aegis engine.</p>
-            <table className="mt-3 w-full border-collapse text-xs font-mono">
-              <tbody>
-                {PROFILE_FIELD_ORDER.map((key, i) => (
-                  <tr key={key} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
-                    <td className="px-3 py-1.5 text-[#6B7280]">{key}</td>
-                    <td className="px-3 py-1.5 text-[#111827]">{fmt(debug.rawProfile[key])}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full table-fixed border-collapse text-xs font-mono">
+                <colgroup>
+                  <col className="w-2/5" />
+                  <col />
+                </colgroup>
+                <tbody>
+                  {PROFILE_FIELD_ORDER.map((key, i) => (
+                    <tr key={key} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
+                      <td className="px-3 py-1.5 align-top text-[#6B7280]">{key}</td>
+                      <ValueCell value={debug.rawProfile[key]} />
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div className="p-6">
             <p className="text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">Engine Outputs</p>
             <p className="mt-1 text-xs text-[#9CA3AF]">Computed deterministically. No model involved.</p>
-            <table className="mt-3 w-full border-collapse text-xs font-mono">
-              <tbody>
-                {(Object.entries(debug.engineOutputs) as Array<[string, unknown]>).map(([key, value], i) => (
-                  <tr key={key} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
-                    <td className="px-3 py-1.5 align-top text-[#6B7280]">{key}</td>
-                    <td className="px-3 py-1.5 text-[#111827]">{fmt(value)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full table-fixed border-collapse text-xs font-mono">
+                <colgroup>
+                  <col className="w-2/5" />
+                  <col />
+                </colgroup>
+                <tbody>
+                  {(Object.entries(debug.engineOutputs) as Array<[string, unknown]>).map(([key, value], i) => (
+                    <tr key={key} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
+                      <td className="px-3 py-1.5 align-top text-[#6B7280]">{key}</td>
+                      <ValueCell value={value} />
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div className="p-6">
@@ -115,11 +162,11 @@ export default function TransparencyPanel({ debug }: { debug: AssessDebug }) {
               <>
                 <p className="mt-2 text-xs font-mono text-[#6B7280]">Model: {debug.narratorModel}</p>
                 <p className="mt-3 text-xs font-medium text-[#374151]">Prompt sent:</p>
-                <pre className="mt-1 max-h-32 overflow-y-auto whitespace-pre-wrap rounded bg-[#f9fafb] p-3 text-xs font-mono text-[#6B7280]">
+                <pre className="mt-1 max-h-48 overflow-y-auto overflow-x-auto whitespace-pre-wrap rounded bg-[#f9fafb] p-3 text-xs font-mono text-[#6B7280]">
                   {debug.narratorPrompt}
                 </pre>
                 <p className="mt-3 text-xs font-medium text-[#374151]">Response received:</p>
-                <pre className="mt-1 max-h-32 overflow-y-auto whitespace-pre-wrap rounded bg-[#f9fafb] p-3 text-xs font-mono text-[#6B7280]">
+                <pre className="mt-1 max-h-48 overflow-y-auto overflow-x-auto whitespace-pre-wrap rounded bg-[#f9fafb] p-3 text-xs font-mono text-[#6B7280]">
                   {debug.narratorResponse}
                 </pre>
               </>
