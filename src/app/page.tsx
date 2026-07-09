@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Shield, LifeBuoy, ShieldAlert, TrendingUp, ArrowRight, Lock, Ban, Plus, MessageSquareText, Play, Landmark, Receipt, Droplets, FileSpreadsheet, Users, CreditCard, Building2, Smartphone } from "lucide-react";
-import { MODEL_VERSION, BUSINESS_PRESENTATION } from "@/data/presentation";
+import { Shield, ArrowRight, Lock, Play } from "lucide-react";
+import { MODEL_VERSION, BUSINESS_PRESENTATION, MOAT, ENGINE, DATA_ECOSYSTEM } from "@/data/presentation";
 import { assess } from "@/engine/aegis-core";
 import { SEEDS } from "@/data/seeds";
 import { VERDICT_VISUAL } from "@/presentation/verdict";
@@ -12,45 +12,6 @@ import ScoreEquation from "@/components/health-card/ScoreEquation";
  * who knows nothing about Aegis: what it is, the moat, and how the engine works.
  * Precision-Minimal: no gradients, gauges, glass, neon, illustrations, emoji.
  */
-
-const MOAT = [
-  {
-    icon: LifeBuoy,
-    title: "Rescue",
-    lead: "Credit-invisible, creditworthy.",
-    body: "Thin-file businesses with no bureau score but strong, verifiable operations get a fair read instead of an automatic rejection.",
-  },
-  {
-    icon: ShieldAlert,
-    title: "Catch",
-    lead: "Bureau-approvable, actually risky.",
-    body: "A clean bureau score cannot buy past a policy breach. Hard flags override any score, so surface-good, structurally-bad files are caught.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Coach",
-    lead: "Not yet — but here is the path.",
-    body: "Borderline borrowers get a concrete, simulated route to approval: exactly which levers move the decision, and by how much.",
-  },
-];
-
-const ENGINE = [
-  { icon: Shield, title: "Deterministic 100-point core", body: "Six weighted factors build a capability score, minus soft penalties. Same inputs, same output — every time. No model drift." },
-  { icon: Ban, title: "Hard-flag knockouts", body: "A policy breach (GST gap, active default, KYC mismatch) forces Refer / Decline regardless of score. Policy dominates." },
-  { icon: Plus, title: "Bounded evidence uplift", body: "Verified operational signals can lift a borderline score by at most +10 — never enough to rescue a knockout." },
-  { icon: MessageSquareText, title: "The LLM explains, never decides", body: "Language models phrase an already-final decision into plain English. They cannot compute a number or change an outcome." },
-];
-
-const DATA_ECOSYSTEM = [
-  { icon: Landmark, source: "Account Aggregator", purpose: "Consented financial information", signals: ["Cash-flow trends", "Banking behaviour", "Balance consistency", "Financial stability"], tag: "Consent-based" },
-  { icon: Receipt, source: "GSTN", purpose: "Business tax filing behaviour", signals: ["GST filing consistency", "Filing gaps", "Payment regularity", "Compliance history"], tag: "Government verified" },
-  { icon: Droplets, source: "BBPS", purpose: "Utility payment behaviour", signals: ["Electricity payments", "Utility consistency", "Payment discipline"], tag: "Verified payment records" },
-  { icon: FileSpreadsheet, source: "TReDS", purpose: "Invoice financing participation", signals: ["Invoice discounting", "Working capital usage", "Receivable behaviour"], tag: "Trade ecosystem" },
-  { icon: Users, source: "EPFO / ESIC", purpose: "Employment and workforce stability", signals: ["Workforce continuity", "Contribution consistency", "Operational stability"], tag: "Operational evidence" },
-  { icon: CreditCard, source: "Credit Bureau", purpose: "Traditional credit history", signals: ["Bureau score", "Existing defaults", "Delinquencies", "Credit history"], tag: "Traditional credit signal" },
-  { icon: Building2, source: "MCA / UDYAM", purpose: "Business identity verification", signals: ["Entity existence", "Registration status", "Business age"], tag: "Identity verification" },
-  { icon: Smartphone, source: "Digital Payments", purpose: "Business digital adoption", signals: ["Digital receipts", "Payment behaviour", "Transaction consistency"], tag: "Operational behaviour" },
-] as const;
 
 export default function Landing() {
   const heroAssessment = assess(SEEDS.champion.profile);
@@ -211,6 +172,12 @@ export default function Landing() {
               ecosystem signals already available across India&rsquo;s digital infrastructure into one explainable Financial
               Health Card.
             </p>
+            <Link
+              href="/data-sources"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-[#1a4731] hover:underline"
+            >
+              Full data sources & explainability reference <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+            </Link>
           </div>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {DATA_ECOSYSTEM.map(d => {

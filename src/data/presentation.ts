@@ -1,3 +1,9 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  LifeBuoy, ShieldAlert, TrendingUp, Shield, Ban, Plus, MessageSquareText,
+  Landmark, Receipt, Droplets, FileSpreadsheet, Users, CreditCard, Building2, Smartphone,
+} from "lucide-react";
+
 /**
  * PRESENTATION METADATA — synthetic descriptive demo data ONLY.
  * ------------------------------------------------------------------
@@ -65,3 +71,50 @@ export function assessmentDateLabel(now: Date = new Date()): string {
     day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
   });
 }
+
+/**
+ * Editorial copy shared by the landing page ("/") and the Data Sources
+ * reference page ("/data-sources") — defined once here so the two pages never
+ * drift out of sync. Static, descriptive, never scored.
+ */
+export interface MoatItem { icon: LucideIcon; title: string; lead: string; body: string; }
+export const MOAT: MoatItem[] = [
+  {
+    icon: LifeBuoy,
+    title: "Rescue",
+    lead: "Credit-invisible, creditworthy.",
+    body: "Thin-file businesses with no bureau score but strong, verifiable operations get a fair read instead of an automatic rejection.",
+  },
+  {
+    icon: ShieldAlert,
+    title: "Catch",
+    lead: "Bureau-approvable, actually risky.",
+    body: "A clean bureau score cannot buy past a policy breach. Hard flags override any score, so surface-good, structurally-bad files are caught.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Coach",
+    lead: "Not yet — but here is the path.",
+    body: "Borderline borrowers get a concrete, simulated route to approval: exactly which levers move the decision, and by how much.",
+  },
+];
+
+export interface EngineHighlight { icon: LucideIcon; title: string; body: string; }
+export const ENGINE: EngineHighlight[] = [
+  { icon: Shield, title: "Deterministic 100-point core", body: "Six weighted factors build a capability score, minus soft penalties. Same inputs, same output — every time. No model drift." },
+  { icon: Ban, title: "Hard-flag knockouts", body: "A policy breach (GST gap, active default, KYC mismatch) forces Refer / Decline regardless of score. Policy dominates." },
+  { icon: Plus, title: "Bounded evidence uplift", body: "Verified operational signals can lift a borderline score by at most +10 — never enough to rescue a knockout." },
+  { icon: MessageSquareText, title: "The LLM explains, never decides", body: "Language models phrase an already-final decision into plain English. They cannot compute a number or change an outcome." },
+];
+
+export interface DataEcosystemSource { icon: LucideIcon; source: string; purpose: string; signals: string[]; tag: string; }
+export const DATA_ECOSYSTEM: DataEcosystemSource[] = [
+  { icon: Landmark, source: "Account Aggregator", purpose: "Consented financial information", signals: ["Cash-flow trends", "Banking behaviour", "Balance consistency", "Financial stability"], tag: "Consent-based" },
+  { icon: Receipt, source: "GSTN", purpose: "Business tax filing behaviour", signals: ["GST filing consistency", "Filing gaps", "Payment regularity", "Compliance history"], tag: "Government verified" },
+  { icon: Droplets, source: "BBPS", purpose: "Utility payment behaviour", signals: ["Electricity payments", "Utility consistency", "Payment discipline"], tag: "Verified payment records" },
+  { icon: FileSpreadsheet, source: "TReDS", purpose: "Invoice financing participation", signals: ["Invoice discounting", "Working capital usage", "Receivable behaviour"], tag: "Trade ecosystem" },
+  { icon: Users, source: "EPFO / ESIC", purpose: "Employment and workforce stability", signals: ["Workforce continuity", "Contribution consistency", "Operational stability"], tag: "Operational evidence" },
+  { icon: CreditCard, source: "Credit Bureau", purpose: "Traditional credit history", signals: ["Bureau score", "Existing defaults", "Delinquencies", "Credit history"], tag: "Traditional credit signal" },
+  { icon: Building2, source: "MCA / UDYAM", purpose: "Business identity verification", signals: ["Entity existence", "Registration status", "Business age"], tag: "Identity verification" },
+  { icon: Smartphone, source: "Digital Payments", purpose: "Business digital adoption", signals: ["Digital receipts", "Payment behaviour", "Transaction consistency"], tag: "Operational behaviour" },
+];

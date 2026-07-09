@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Shield, LayoutDashboard, ClipboardCheck, TrendingUp, Info, LogOut, ChevronDown, Menu, X,
+  Shield, LayoutDashboard, ClipboardCheck, TrendingUp, Database, Info, LogOut, ChevronDown, Menu, X,
   type LucideIcon,
 } from "lucide-react";
 import { APP_VERSION, RELATIONSHIP_MANAGER } from "@/data/presentation";
@@ -21,6 +21,7 @@ const NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, isActive: p => p.startsWith("/dashboard") || p.startsWith("/business") },
   { href: "/assess", label: "Assess Business", icon: ClipboardCheck, isActive: p => p.startsWith("/assess") },
   { href: "/simulator/climber", label: "Simulator (What-If)", icon: TrendingUp, isActive: p => p.startsWith("/simulator") },
+  { href: "/data-sources", label: "Data Sources", icon: Database, isActive: p => p.startsWith("/data-sources") },
   { href: "/", label: "About Aegis", icon: Info, isActive: () => false },
 ];
 

@@ -124,7 +124,7 @@ export default function TransparencyPanel({ debug }: { debug: AssessDebug }) {
                 <tbody>
                   {PROFILE_FIELD_ORDER.map((key, i) => (
                     <tr key={key} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
-                      <td className="px-3 py-1.5 align-top text-[#6B7280]">{key}</td>
+                      <td className="break-words px-3 py-1.5 align-top text-[#6B7280]" style={{ overflowWrap: "break-word" }}>{key}</td>
                       <ValueCell value={debug.rawProfile[key]} />
                     </tr>
                   ))}
@@ -145,7 +145,7 @@ export default function TransparencyPanel({ debug }: { debug: AssessDebug }) {
                 <tbody>
                   {(Object.entries(debug.engineOutputs) as Array<[string, unknown]>).map(([key, value], i) => (
                     <tr key={key} className={i % 2 === 0 ? "bg-[#f9fafb]" : ""}>
-                      <td className="px-3 py-1.5 align-top text-[#6B7280]">{key}</td>
+                      <td className="break-words px-3 py-1.5 align-top text-[#6B7280]" style={{ overflowWrap: "break-word" }}>{key}</td>
                       <ValueCell value={value} />
                     </tr>
                   ))}
