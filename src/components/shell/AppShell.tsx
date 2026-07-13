@@ -65,9 +65,9 @@ function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate
         </div>
         <p className="mt-2 text-xs leading-relaxed text-white/70">100-point Core · Explainable Decisions</p>
         <p className="mt-3 text-xs text-white/70">Version {APP_VERSION}</p>
-        <p className="text-xs text-white/70">© 2025 Aegis by IDBI Innovate</p>
+        <p className="text-xs text-white/70">© 2026 Aegis by IDBI Innovate</p>
 
-        <div className="mt-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/10 px-3 py-2">
+ {/*        <div className="mt-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/10 px-3 py-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-semibold text-white">RM</span>
           <div className="min-w-0 flex-1 leading-tight">
             <p className="truncate text-sm font-medium text-white">{RELATIONSHIP_MANAGER.name}</p>
@@ -82,7 +82,7 @@ function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate
         >
           <LogOut className="h-[18px] w-[18px]" strokeWidth={1.75} />
           Log out
-        </button>
+        </button> */}
       </div>
     </>
   );

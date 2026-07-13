@@ -54,10 +54,10 @@ export const DEMO_INSIGHT: Record<string, DemoInsight> = {
 // App chrome — not per-business. Descriptive, never scored.
 export const MODEL_VERSION = "Aegis core v1.2";
 export const ENGINE_DESCRIPTOR = "Deterministic — No AI in scoring";
-export const APP_VERSION = "1.2.0";
+export const APP_VERSION = "0.2";
 
 // Relationship-manager identity shown in the sidebar. Synthetic demo persona.
-export const RELATIONSHIP_MANAGER = { name: "Rohit Mehta", role: "Relationship Manager" };
+export const RELATIONSHIP_MANAGER = { name: "Foundry", role: "Relationship Manager" };
 
 // Request-time chrome (NOT engine output). Format the moment a page renders.
 export function assessmentDateLabel(now: Date = new Date()): string {
