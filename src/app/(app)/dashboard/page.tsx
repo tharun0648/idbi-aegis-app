@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { listBusinessSummaries } from "@/engine/assessmentAdapter";
 import { VERDICT_VISUAL } from "@/presentation/verdict";
 import { BUSINESS_PRESENTATION, DEMO_INSIGHT } from "@/data/presentation";
-import KpiRow from "@/components/dashboard/KpiRow";
+// import KpiRow from "@/components/dashboard/KpiRow";
 
 const bureauLabel: Record<string, string> = { reject: "Reject", borderline: "Borderline", approvable: "Approvable" };
 
@@ -25,9 +25,9 @@ export default function Dashboard() {
         </Link>
       </div>
 
-       <div className="mt-6">
+{/*        <div className="mt-6">
         <KpiRow businesses={businesses} />
-      </div>
+      </div> */}
 
       <ul className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
         {businesses.map(({ meta, recommendation, decisionConfidence }) => {

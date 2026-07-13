@@ -25,7 +25,16 @@ export default function BusinessPage({ params }: { params: Promise<{ id: string 
     fetch("/api/assess", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(seed.profile),
+      body: JSON.stringify({
+        profile: seed.profile,
+        business: {
+          id: seed.id,
+          businessName: seed.businessName,
+          archetype: seed.archetype,
+          bureauScore: seed.bureauScore,
+          bureauVerdict: seed.bureauVerdict,
+        },
+      }),
     })
       .then(r => r.json())
       .then(data => {

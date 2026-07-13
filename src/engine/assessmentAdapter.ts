@@ -87,11 +87,18 @@ const AD_HOC_META: BusinessMeta = {
  * Same pipeline as getAssessment, minus the seed lookup — the engine is the
  * single source of truth, the UI renders the same EnrichedAssessment.
  */
-export async function assessAdHoc(profile: MSMEProfile, narratorTrace?: NarratorTrace): Promise<EnrichedAssessment> {
-  const core: CoreAssessment = assess(profile);
+export async function assessAdHoc(
+  profile: MSMEProfile,
+  business?: BusinessMeta,
+  narratorTrace?: NarratorTrace,
+): Promise<EnrichedAssessment> {
+  const core = assess(profile);
+
+  const meta = business ?? AD_HOC_META;
+
   return {
     ...core,
-    business: AD_HOC_META,
-    businessNarrative: await narrate(core, AD_HOC_META, narratorTrace),
+    business: meta,
+    businessNarrative: await narrate(core, meta, narratorTrace),
   };
 }

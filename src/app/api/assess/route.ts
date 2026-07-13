@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { validateProfile } from "@/engine/profileSchema";
-import { assessAdHoc } from "@/engine/assessmentAdapter";
+import { assessAdHoc, BusinessMeta } from "@/engine/assessmentAdapter";
 import type { NarratorTrace } from "@/ai/narrator";
 import type { AssessDebug } from "@/types/debug";
 
@@ -21,15 +21,21 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-
-  const result = validateProfile(body);
+  const payload = body as {
+  profile: unknown;
+  business?: BusinessMeta;
+  };
+  const result = validateProfile(payload.profile);
   if (!result.ok) {
     return NextResponse.json({ ok: false, errors: result.errors }, { status: 400 });
   }
 
   const narratorTrace: NarratorTrace = { model: null, prompt: null, response: null };
-  const assessment = await assessAdHoc(result.profile, narratorTrace);
-
+const assessment = await assessAdHoc(
+  result.profile,
+  payload.business,
+  narratorTrace
+  );
   // _debug is opt-in via AEGIS_DEBUG_PANEL: it carries the raw profile and the
   // narrator's prompt/response text, which feed the Transparency Panel. Gated
   // on an explicit env var (not NODE_ENV) so it can be turned on for the live
